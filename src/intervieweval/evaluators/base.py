@@ -209,3 +209,34 @@ class BaseEvaluator(ABC):
             True if valid
         """
         return isinstance(result, dict)
+
+
+class EvaluatorFactory:
+    """
+    Factory for creating evaluator instances.
+    """
+
+    @staticmethod
+    def create_evaluators(
+        settings: Settings, prompt_manager: PromptManager, cache: Optional[PersistentCache] = None
+    ) -> Dict[str, BaseEvaluator]:
+        """
+        Create all evaluator instances.
+
+        Returns:
+            Dictionary of evaluator name to instance
+        """
+        from intervieweval.evaluators.plausibility import PlausibilityEvaluator
+        from intervieweval.evaluators.technical import TechnicalEvaluator
+        from intervieweval.evaluators.communication import CommunicationEvaluator
+        from intervieweval.evaluators.synthesis import SynthesisEvaluator
+
+        evaluators = {
+            "plausibility": PlausibilityEvaluator(settings, prompt_manager, cache),
+            "technical": TechnicalEvaluator(settings, prompt_manager, cache),
+            "communication": CommunicationEvaluator(settings, prompt_manager, cache),
+            "synthesis": SynthesisEvaluator(settings, prompt_manager, cache),
+        }
+
+        logger.info(f"Created {len(evaluators)} evaluators")
+        return evaluators

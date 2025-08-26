@@ -17,17 +17,15 @@ class CommunicationEvaluator(BaseEvaluator):
     Evaluates communication effectiveness and professionalism of candidate responses.
     """
 
-    def __init__(self, settings, prompt_manager, cache=None):
-        super().__init__(settings, prompt_manager, cache, chain_name="COMMUNICATION")
+    def __init__(self, settings, prompt_manager, cache=None, cache_namespace_suffix=""):
+        super().__init__(
+            settings, prompt_manager, cache, chain_name="COMMUNICATION", cache_namespace_suffix=cache_namespace_suffix
+        )
 
     def get_prompt_key(self) -> str:
         return "communication"
 
-    async def evaluate(
-            self,
-            question: str,
-            response: str
-    ) -> CommunicationResult:
+    async def evaluate(self, question: str, response: str) -> CommunicationResult:
         """
         Evaluate the communication effectiveness of a candidate's response.
 
@@ -39,10 +37,7 @@ class CommunicationEvaluator(BaseEvaluator):
             CommunicationResult with scores and analysis
         """
         # Prepare inputs
-        inputs = {
-            "question": question,
-            "response": response
-        }
+        inputs = {"question": question, "response": response}
 
         # Invoke chain
         result = await self.chain.ainvoke(inputs)
@@ -65,7 +60,7 @@ class CommunicationEvaluator(BaseEvaluator):
             "relevance",
             "persuasiveness",
             "professionalism",
-            "overall_assessment"
+            "overall_assessment",
         ]
 
         if not all(field in result for field in required_fields):

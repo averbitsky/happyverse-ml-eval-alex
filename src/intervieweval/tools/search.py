@@ -20,7 +20,13 @@ class WebSearchTool:
     Web search tool with persistent caching and metrics.
     """
 
-    def __init__(self, cache: Optional[PersistentCache] = None, max_results: int = 5, cache_ttl: int = 3600):
+    def __init__(
+        self,
+        cache: Optional[PersistentCache] = None,
+        max_results: int = 5,
+        cache_ttl: int = 3600,
+        cache_namespace_suffix: str = "",
+    ):
         """
         Initialize web search tool.
 
@@ -28,14 +34,22 @@ class WebSearchTool:
             cache: Optional persistent cache
             max_results: Maximum number of search results
             cache_ttl: Cache TTL in seconds
+            cache_namespace_suffix: Suffix for cache namespace to prevent cross-contamination
         """
         self.cache = cache
         self.max_results = max_results
         self.cache_ttl = cache_ttl
+        self.cache_namespace_suffix = cache_namespace_suffix
         self.ddgs = DDGS()
-        self.namespace = "search"
 
-        logger.info(f"Initialized web search tool (max_results={max_results})")
+        # Build namespace with suffix if provided
+        base_namespace = "search"
+        if cache_namespace_suffix:
+            self.namespace = f"{base_namespace}_{cache_namespace_suffix}"
+        else:
+            self.namespace = base_namespace
+
+        logger.info(f"Initialized web search tool (max_results={max_results}, namespace={self.namespace})")
 
     def search(self, query: str) -> str:
         """

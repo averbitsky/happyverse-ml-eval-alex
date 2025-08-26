@@ -17,8 +17,10 @@ class TechnicalEvaluator(BaseEvaluator):
     Evaluates technical proficiency and knowledge depth of candidate responses.
     """
 
-    def __init__(self, settings, prompt_manager, cache=None):
-        super().__init__(settings, prompt_manager, cache, chain_name="TECHNICAL")
+    def __init__(self, settings, prompt_manager, cache=None, cache_namespace_suffix=""):
+        super().__init__(
+            settings, prompt_manager, cache, chain_name="TECHNICAL", cache_namespace_suffix=cache_namespace_suffix
+        )
 
     def get_prompt_key(self) -> str:
         return "technical"
