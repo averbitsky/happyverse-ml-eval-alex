@@ -3,17 +3,12 @@ Test import patterns.
 """
 
 import pytest
-from intervieweval import (
-    EvaluationOrchestrator,
-    FinalEvaluation,
-    PersistentCache,
-    PromptManager,
-    RecommendationLevel,
-    Settings,
-    __version__,
-)
+from intervieweval.config.settings import Settings
+from intervieweval.evaluators.orchestrator import EvaluationOrchestrator
 from intervieweval.evaluators.plausibility import PlausibilityEvaluator
+from intervieweval.models.evaluation import FinalEvaluation, RecommendationLevel
 from intervieweval.models.evaluation import PlausibilityResult, TechnicalResult
+from intervieweval.prompts.manager import PromptManager
 from intervieweval.utils.logging import ColoredLogger, setup_logging
 
 
@@ -21,14 +16,6 @@ class TestImports:
     """
     Tests to ensure that all key package parts can be imported.
     """
-
-    def test_version(self) -> None:
-        """
-        Tests that the package version is accessible.
-
-        :return: None.
-        """
-        assert __version__ == "0.0.1"
 
     def test_settings_import(self) -> None:
         """

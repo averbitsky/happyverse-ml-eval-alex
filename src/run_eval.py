@@ -108,17 +108,17 @@ def print_evaluation_summary(evaluation, candidate_name: str) -> None:
 
     # Key findings
     if rec.key_strengths:
-        print(f"\n{Fore.GREEN}KEY STRENGTHS:{Style.RESET_ALL}")
+        print(f"\n{Fore.GREEN}STRENGTHS:{Style.RESET_ALL}")
         for strength in rec.key_strengths[:3]:
             print(f"  ✓ {strength}")
 
     if rec.critical_concerns:
-        print(f"\n{Fore.YELLOW}CRITICAL CONCERNS:{Style.RESET_ALL}")
+        print(f"\n{Fore.YELLOW}CONCERNS:{Style.RESET_ALL}")
         for concern in rec.critical_concerns[:3]:
             print(f"  ⚠ {concern}")
 
     if rec.deal_breakers:
-        print(f"\n{Fore.RED}DEAL BREAKERS:{Style.RESET_ALL}")
+        print(f"\n{Fore.RED}DEAL-BREAKERS:{Style.RESET_ALL}")
         for breaker in rec.deal_breakers:
             print(f"  ✗ {breaker}")
 

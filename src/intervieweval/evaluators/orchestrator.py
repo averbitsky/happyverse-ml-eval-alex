@@ -302,15 +302,65 @@ class EvaluationOrchestrator:
     @staticmethod
     def _parse_transcript(transcript: str, questions: List[str]) -> List[Tuple[str, str]]:
         """
-        Parses a transcript into question-answer pairs.
+        Parses a transcript into question-answer pairs and removes any repeated question text from the beginning of
+        each extracted answer.
 
         :param transcript: Full transcript text.
         :param questions: List of interview questions.
         :return: List of (question, answer) tuples.
         """
-        qa_pairs = []
 
-        # Try to split by Q1, Q2, Q3 patterns
+        def _normalize_answer_prefix(ans: str, quest: str) -> str:
+            """
+            Iteratively removes leading artifacts from the start of an answer:
+            - Any 'A<number>:' prefix (e.g., 'A1:', 'A12:')
+            - The question text itself (whitespace-insensitive, with optional quotes/punct)
+            Repeats until no further change.
+
+            :param ans: Raw answer text.
+            :param quest: Corresponding question text.
+            :return: Cleaned answer text.
+            """
+            a = ans.lstrip()
+
+            # Build a whitespace-insensitive regex for the question
+            q_tokens = quest.strip().split()
+            if not q_tokens:
+                return a
+            q_ws_insensitive = r"\s*".join(map(re.escape, q_tokens))
+
+            # Pattern for a leading 'A<number>:' like 'A1:' or 'A12:'
+            a_prefix = re.compile(r"^\s*A\d+:\s*", flags=re.IGNORECASE)
+
+            # Pattern for the question at the very start.
+            # IMPORTANT: After the question, only allow spaces/tabs (NO newlines)
+            # before optional trailing quotes/punctuation, so we don't consume the
+            # opening quote of the actual answer on the next line.
+            q_prefix = re.compile(
+                rf""" ^
+                     [ \t]* [\'\"\u201C\u201D\u2018\u2019\`\(\[]*         # optional leading quotes/brackets
+                     (?:Question\s*\d*\s*:\s*)?                          # optional 'Question:' prefix
+                     {q_ws_insensitive}                                   # question content (flex whitespace)
+                     (?:[ \t]*[\'\"\u201C\u201D\u2018\u2019\`\)\]]*)?     # optional trailing quotes (same line)
+                     (?:[ \t]*[:\-–—]+)?                                  # optional trailing punctuation (same line)
+                     [ \t]*                                               # trailing spaces/tabs only (no newline)
+                """,
+                flags=re.IGNORECASE | re.VERBOSE,
+            )
+
+            for _ in range(4):  # small cap to avoid infinite loops
+                before = a
+                a = a_prefix.sub("", a)  # remove leading A<n>:
+                a = q_prefix.sub("", a)  # remove leading question (tightened trailing part)
+                a = a_prefix.sub("", a)  # remove A<n>: again if it reappears
+                if a == before:
+                    break
+                a = a.lstrip()
+            return a.lstrip()
+
+        qa_pairs: List[Tuple[str, str]] = []
+
+        # Try 'Qn:'-style blocks first
         pattern = r"Q\d+:.*?(?=Q\d+:|$)"
         matches = re.findall(pattern, transcript, re.DOTALL)
 
@@ -319,28 +369,33 @@ class EvaluationOrchestrator:
                 parts = match.split(":", 1)
                 if len(parts) == 2:
                     response = parts[1].strip()
-                    # Remove A1:, A2: etc if present
-                    response = re.sub(r"^A\d+:", "", response).strip()
+
+                    # If there is an 'A<n>:' immediately at the start, remove it first
+                    response = re.sub(r"^A\d+:\s*", "", response).strip()
 
                     q_num = re.search(r"Q(\d+)", parts[0])
-                    if q_num and int(q_num.group(1)) <= len(questions):
-                        question = questions[int(q_num.group(1)) - 1]
-                        qa_pairs.append((question, response))
+                    if q_num:
+                        idx = int(q_num.group(1)) - 1
+                        if 0 <= idx < len(questions):
+                            question = questions[idx]
+                            # Normalize: remove any leading question text / A<n>: artifacts
+                            response = _normalize_answer_prefix(response, question)
+                            qa_pairs.append((question, response))
         else:
-            # Fallback: look for questions in order
+            # Fallback: split by actual question strings in order
             remaining_text = transcript
             for question in questions:
                 if question in remaining_text:
                     parts = remaining_text.split(question, 1)
                     if len(parts) == 2:
                         answer_text = parts[1]
-                        # Find where the next question starts
+                        # locate the earliest next question
                         next_q_start = len(answer_text)
                         for next_q in questions:
                             if next_q in answer_text:
                                 next_q_start = min(next_q_start, answer_text.index(next_q))
-
                         answer = answer_text[:next_q_start].strip()
+                        answer = _normalize_answer_prefix(answer, question)
                         qa_pairs.append((question, answer))
                         remaining_text = answer_text[next_q_start:]
 
