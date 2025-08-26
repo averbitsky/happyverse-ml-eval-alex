@@ -198,7 +198,17 @@ class EvaluationOrchestrator:
         # Evaluate all Q&A pairs with controlled parallelism
         semaphore = asyncio.Semaphore(self.settings.max_parallel_evaluations)
 
-        async def evaluate_with_limit(q, r):
+        async def evaluate_with_limit(q: str, r: str) -> QuestionEvaluation:
+            """
+            Evaluates a single question–response pair while enforcing a concurrency limit.
+
+            Uses shared semaphore to cap the number of evaluations running in parallel. Delegates the actual scoring to
+            evaluate_single_qa with transcript-specific evaluator instances.
+
+            :param q: Interview question text.
+            :param r: Candidate response text.
+            :return: QuestionEvaluation containing plausibility, technical, communication, and verification assessments.
+            """
             async with semaphore:
                 return await self.evaluate_single_qa(
                     job_description,
