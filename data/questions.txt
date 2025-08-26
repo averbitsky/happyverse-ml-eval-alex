@@ -1,0 +1,8 @@
+Question 1:
+Tell me about a time you designed or optimized a private 5G or LTE RAN deployment. What technologies did you use, what KPIs did you track, and how did you validate performance on-site?
+
+Question 2:
+Walk me through how you integrated a 5G core (e.g., Open5GS, Magma, or similar) into an enterprise network. What challenges did you face with routing, NAT, or DNS, and how did you resolve them?
+
+Question 3:
+Imagine a client reports intermittent latency spikes on their factory floor private 5G network. Devices drop video feeds briefly every few minutes. How would you debug and isolate the root cause?

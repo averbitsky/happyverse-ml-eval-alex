@@ -1,0 +1,39 @@
+Job Description: Senior Telecom Systems Engineer
+Location: Remote (US-based preferred)
+Company: OrionTel - Private 5G and Edge Connectivity Provider
+Team: Network Architecture & Operations
+
+About OrionTel
+OrionTel is building the next generation of enterprise-grade, private 5G networks for smart factories, ports, campuses, and defense applications. We offer ultra-low latency, high-reliability connectivity with end-to-end visibility and orchestration tools for industrial clients.
+We’re a fast-growing telecom infra startup backed by leading deep-tech investors, with deployments across North America and APAC.
+
+The Role
+We’re looking for a Senior Telecom Systems Engineer to design and scale our 5G core and RAN infrastructure. You’ll own architecture decisions for private network deployments, lead cross-vendor integration, and help optimize edge performance across a range of industrial use cases.
+This is a hybrid systems + networking role - ideal for someone who thrives in both theoretical design and field-scale deployment.
+
+Responsibilities
+●	Design and deploy private 5G networks (SA/NSA) with cloud-native cores
+●	Configure and optimize 5G RAN elements (gNBs, small cells, edge UPFs)
+●	Lead integrations across OSS/BSS, SIM provisioning, and SDN controllers
+●	Benchmark and tune network KPIs: latency, jitter, handoff reliability
+●	Work with field engineers to debug RF coverage, device onboarding, QoS enforcement
+●	Collaborate with product and sales to tailor solutions for manufacturing, defense, and logistics clients
+
+What We’re Looking For
+●	6+ years in telecom or cellular systems, with deep understanding of LTE/5G architecture
+●	Experience deploying and tuning 5G SA or NSA networks
+●	Proficiency in cloud-native network functions (e.g., Open5GS, Amarisoft, Magma)
+●	Strong grasp of IP networking, VLANs, and security in segmented deployments
+●	Bonus: experience with CBRS, eSIM/remote SIM provisioning, MEC, or WiFi 6E integration
+●	Bonus: scripting experience (Python, Bash) for network automation
+
+Our Stack
+●	5G Core: Open5GS, Magma, Amarisoft, AWS Wavelength
+●	RAN: Baicells, Nokia AirScale, Airspan
+●	Infra: Kubernetes, Helm, Ansible
+●	Monitoring: Prometheus, Grafana, ELK Stack
+
+This Role Will Help Us
+●	Deliver best-in-class edge networks for high-stakes, high-throughput use cases
+●	Optimize end-to-end connectivity from radio to application layer
+●	Expand our footprint into public safety, defense, and automated manufacturing

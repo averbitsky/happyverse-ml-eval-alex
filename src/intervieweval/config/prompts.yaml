@@ -1,0 +1,268 @@
+# Evaluation prompt templates
+
+plausibility:
+  template: |
+    You are an expert technical interviewer evaluating the plausibility of a candidate's response.
+
+    Job Context:
+    {job_description}
+
+    Interview Question:
+    {question}
+
+    Candidate Response:
+    {response}
+
+    Search Results (if available):
+    {search_results}
+
+    Carefully analyze this response for plausibility. Consider:
+
+    1. TECHNICAL FEASIBILITY
+    - Are the technical claims physically/logically possible?
+    - Do the technologies mentioned actually exist? (Check search results if provided)
+    - Are the described implementations realistic?
+    - Could the described systems actually work as claimed?
+
+    2. CONSISTENCY & LOGIC
+    - Are the claims internally consistent?
+    - Do timelines and sequences make logical sense?
+    - Are there contradictions within the response?
+
+    3. VERIFIABILITY
+    - Can the companies/projects mentioned be verified? (Check search results)
+    - Are specific details provided that could be fact-checked?
+    - Does the candidate avoid providing verifiable details when they should?
+
+    4. DEPTH & AUTHENTICITY
+    - Does the response show genuine understanding or just buzzwords?
+    - Are there signs of fabrication or exaggeration?
+    - Does the level of detail match claimed experience?
+
+    IMPORTANT: If any technology terms or implementations seem unusual, explicitly note them for further verification.
+
+    Provide your evaluation in the following JSON format:
+    {{
+        "plausibility_score": <0-100>,
+        "technical_feasibility": {{
+            "assessment": "detailed assessment of technical claims",
+            "claims_needing_verification": ["list of claims that should be web-verified"],
+            "impossible_claims": ["list of any technically impossible claims"],
+            "questionable_claims": ["list of questionable but not impossible claims"]
+        }},
+        "verifiability": {{
+            "verifiable_elements": ["list of things that can be fact-checked"],
+            "missing_specifics": ["areas where specifics should have been provided but weren't"],
+            "red_flags": ["specific concerns about verification"]
+        }},
+        "authenticity_indicators": {{
+            "positive_signs": ["signs of genuine experience"],
+            "negative_signs": ["signs of fabrication or exaggeration"]
+        }},
+        "overall_assessment": "comprehensive paragraph explaining the plausibility evaluation"
+    }}
+
+technical:
+  template: |
+    You are a senior technical expert evaluating a candidate's technical proficiency for a specific role.
+
+    Job Requirements:
+    {job_description}
+
+    Interview Question:
+    {question}
+
+    Candidate Response:
+    {response}
+
+    Additional Context (if available):
+    {technical_context}
+
+    Evaluate the technical proficiency demonstrated in this response:
+
+    1. TECHNICAL ACCURACY
+    - Are technical concepts explained correctly?
+    - Is the terminology used appropriately?
+    - Are there any technical errors or misunderstandings?
+
+    2. DEPTH OF KNOWLEDGE
+    - Does the response show surface-level or deep understanding?
+    - Are complex concepts handled appropriately?
+    - Is there evidence of hands-on experience vs theoretical knowledge?
+
+    3. PROBLEM-SOLVING APPROACH
+    - Is the technical approach sound?
+    - Are best practices followed?
+    - Would the described solutions actually work?
+
+    4. ROLE ALIGNMENT
+    - Does the technical level match the job requirements?
+    - Are the right technologies and skills demonstrated?
+    - Any critical gaps in knowledge for this role?
+
+    IMPORTANT: For any technologies or implementations you're uncertain about, mark them for verification rather than assuming they're wrong.
+
+    Provide your evaluation in JSON format:
+    {{
+        "technical_score": <0-100>,
+        "accuracy_assessment": {{
+            "correct_concepts": ["correctly explained technical concepts"],
+            "uncertain_concepts": ["concepts that need verification"],
+            "errors": ["clear technical errors or misunderstandings"],
+            "terminology_usage": "assessment of terminology use"
+        }},
+        "depth_analysis": {{
+            "level": "shallow/moderate/deep",
+            "evidence_of_experience": ["indicators of real experience"],
+            "knowledge_gaps": ["identified gaps"],
+            "explanation": "detailed assessment of technical depth"
+        }},
+        "problem_solving": {{
+            "approach_quality": "assessment of problem-solving approach",
+            "best_practices": ["followed best practices"],
+            "concerns": ["technical concerns with approach"]
+        }},
+        "role_fit": {{
+            "alignment_score": <0-100>,
+            "strengths_for_role": ["relevant strengths"],
+            "gaps_for_role": ["critical gaps"],
+            "explanation": "how well they fit the technical requirements"
+        }},
+        "overall_assessment": "comprehensive technical evaluation paragraph"
+    }}
+
+communication:
+  template: |
+    You are evaluating a candidate's communication skills based on their interview response.
+
+    Question Asked:
+    {question}
+
+    Candidate Response:
+    {response}
+
+    Evaluate their communication effectiveness:
+
+    1. CLARITY & STRUCTURE
+    - Is the response well-organized?
+    - Are ideas expressed clearly?
+    - Is there a logical flow to the answer?
+
+    2. DIRECTNESS & RELEVANCE
+    - Does the response directly answer the question?
+    - Is there unnecessary tangenting or filler?
+    - Are concrete examples provided?
+
+    3. PERSUASIVENESS & ENGAGEMENT
+    - Is the response engaging and compelling?
+    - Does it build confidence in their abilities?
+    - Is there effective storytelling?
+
+    4. PROFESSIONAL COMMUNICATION
+    - Is the tone appropriate for a technical interview?
+    - Is there a good balance between technical detail and accessibility?
+    - Any communication red flags?
+
+    Provide your evaluation in JSON format:
+    {{
+        "communication_score": <0-100>,
+        "clarity": {{
+            "score": <0-100>,
+            "organization": "assessment of response organization",
+            "strengths": ["communication strengths"],
+            "weaknesses": ["areas for improvement"]
+        }},
+        "relevance": {{
+            "answers_question": true/false,
+            "directness_score": <0-100>,
+            "unnecessary_content": ["tangents or filler content"],
+            "missing_elements": ["what should have been addressed but wasn't"]
+        }},
+        "persuasiveness": {{
+            "score": <0-100>,
+            "compelling_elements": ["what made the response compelling"],
+            "weak_areas": ["where the response was weak"],
+            "storytelling_quality": "assessment of narrative ability"
+        }},
+        "professionalism": {{
+            "appropriate_tone": true/false,
+            "technical_communication": "assessment of technical communication",
+            "red_flags": ["any concerning communication patterns"]
+        }},
+        "overall_assessment": "comprehensive communication evaluation paragraph"
+    }}
+
+synthesis:
+  template: |
+    You are making a final hiring recommendation based on multiple evaluation dimensions.
+
+    Evaluation Results:
+    {evaluations}
+
+    Job Description:
+    {job_description}
+
+    Based on all evaluations, provide a comprehensive hiring recommendation:
+
+    1. Synthesize the key findings across all dimensions
+    2. Identify the most critical strengths and weaknesses
+    3. Assess overall fit for the role
+    4. Make a clear recommendation with justification
+
+    Consider:
+    - Are there any deal-breakers (e.g., dishonesty, fundamental lack of required skills)?
+    - How do they compare to typical candidates for this level role?
+    - What is the risk/benefit of hiring this candidate?
+
+    Provide your recommendation in JSON format:
+    {{
+        "recommendation_level": "Strong Yes/Weak Yes/Weak No/Strong No",
+        "confidence": <0.0-1.0>,
+        "key_strengths": ["top 3-5 strengths"],
+        "critical_concerns": ["top 3-5 concerns"],
+        "deal_breakers": ["any absolute disqualifiers"],
+        "hiring_risk": "low/medium/high",
+        "comparison_to_typical": "how they compare to typical candidates for this role",
+        "specific_recommendations": {{
+            "if_hire": "what to focus on if hiring",
+            "if_reject": "feedback for the candidate"
+        }},
+        "detailed_rationale": "comprehensive explanation of the recommendation"
+    }}
+
+entity_extraction:
+  template: |
+    Extract key entities from this response that should be verified through web search:
+
+    Response: {response}
+
+    Identify:
+    1. Company names (if any)
+    2. Specific technologies, protocols, or standards mentioned
+    3. Technical claims that seem unusual or should be verified
+
+    Return as JSON:
+    {{
+        "companies": ["list of company names"],
+        "technologies": ["list of specific technologies/protocols/tools"],
+        "implementations": ["list of specific claims that should be verified"]
+    }}
+
+    Focus on entities that are:
+    - Specific and verifiable (not generic terms)
+    - Mentioned as real technologies or companies
+    - Important for evaluating the truthfulness of the response
+
+claim_verification:
+  template: |
+    Analyze this technical claim and identify what needs verification:
+
+    Claim: {claim}
+
+    Identify:
+    1. The core assertion being made (what is actually being claimed?)
+    2. Any metrics or numbers that seem unrealistic
+    3. Technical approaches that seem impossible or contradictory
+
+    DO NOT just list the technologies mentioned. Focus on the CLAIM itself.
+    Return 2-3 specific things about this claim that should be verified.

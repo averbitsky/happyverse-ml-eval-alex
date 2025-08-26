@@ -1,0 +1,111 @@
+[build-system]
+requires = ["setuptools>=70.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "interview-eval"
+version = "0.0.1"
+requires-python = ">=3.10,<3.12"
+description = "Evaluate interview transcripts with agentic AI: plausibility, technical proficiency, and communication."
+readme = "README.md"
+authors = [
+    { name = "Alex Verbitsky", email = "71183845+averbitsky@users.noreply.github.com" }
+]
+maintainers = [
+    { name = "Alex Verbitsky", email = "71183845+averbitsky@users.noreply.github.com" }
+]
+dependencies = [
+    "langchain==0.3.27",
+    "langchain-openai==0.3.31",
+    "langgraph==0.6.6",
+    "ddgs==9.5.4",
+    "pydantic>=2.10.6",
+    "python-dotenv>=1.1.1",
+    "openai>=1.101.0",
+    "tiktoken>=0.11.0",
+    "tenacity>=9.1.2",
+    "pandas",
+    "numpy",
+    "matplotlib",
+    "seaborn",
+    "pytest",
+    "ipython",
+    "loguru",
+]
+
+[project.optional-dependencies]
+notebooks = [
+    "jupyterlab>=4.3.5",
+]
+dev = [
+    "pre-commit",
+    "black[jupyter]",
+    "ruff",
+    "isort",
+    "nbstripout",
+    "mypy",
+]
+ui = [
+    "streamlit",
+    "gradio",
+]
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["intervieweval*"]
+namespaces = false
+
+[tool.ruff]
+line-length = 120
+exclude = ["*.ipynb"]
+
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile = "black"
+
+[tool.ruff.lint.mccabe]
+max-complexity = 30
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "C", "R", "W"]
+ignore = [
+    "F401",
+    "F601",
+    "F811",
+    "I001",
+    "W293",
+    "W291",
+    "E712",
+]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["src/", "tests/"]
+strict_optional = true
+disallow_untyped_defs = true
+disallow_untyped_calls = true
+warn_untyped_decorators = true
+disallow_any = true
+disallow_any_explicit = true
+disallow_any_generics = true
+disallow_any_unimported = true
+disallow_any_expr = true
+disallow_any_decorated = true
+ignore_missing_imports = true
+pretty = true
+show_error_codes = true
+show_column_numbers = true
+cache_dir = ".mypy_cache"
+incremental = true
+warn_unused_ignores = true
+
+[tool.uv.dependency-groups]
+dev = ["dev"]
+notebooks = ["notebooks"]
+ui = ["ui"]
