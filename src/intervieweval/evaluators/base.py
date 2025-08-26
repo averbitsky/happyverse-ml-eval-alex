@@ -22,6 +22,82 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_ex
 logger = logging.getLogger(__name__)
 
 
+class MonitoredChain:
+    """
+    Wrapper around a LangChain chain that adds monitoring, caching, and retry logic.
+    """
+
+    def __init__(self, chain: Any, evaluator: "BaseEvaluator") -> None:
+        """
+        Initializes a monitored chain.
+
+        :param chain: The underlying chain to wrap (prompt → LLM → parser).
+        :param evaluator: The evaluator instance (provides cache, settings, names, and logging).
+        """
+        self.chain = chain
+        self.evaluator = evaluator
+
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=4, max=60),
+        retry=retry_if_exception_type(openai.RateLimitError),
+    )
+    async def ainvoke(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Asynchronously invokes the wrapped chain with monitoring, caching, and retry.
+
+        :param inputs: Chain inputs.
+        :return: Chain outputs.
+        """
+        llm_calls.labels(chain_type=self.evaluator.chain_name).inc()
+
+        # Cache lookup
+        cache_key = self.evaluator._get_cache_key(inputs)
+        if self.evaluator.cache and cache_key:
+            cached_result = self.evaluator.cache.get(
+                namespace=self.evaluator._get_cache_namespace(),
+                key=cache_key,
+            )
+            if cached_result is not None:
+                ColoredLogger.log_cache_hit(self.evaluator.chain_name, cache_key)
+                return cached_result
+
+        # Log input
+        ColoredLogger.log_llm_input(self.evaluator.chain_name, inputs)
+
+        try:
+            # Call underlying chain
+            result = await self.chain.ainvoke(inputs)
+
+            # Log output
+            ColoredLogger.log_llm_output(self.evaluator.chain_name, result)
+
+            # Populate cache
+            if self.evaluator.cache and cache_key:
+                self.evaluator.cache.set(
+                    namespace=self.evaluator._get_cache_namespace(),
+                    key=cache_key,
+                    value=result,
+                    ttl=self.evaluator.settings.cache_ttl_seconds,
+                )
+
+            return result
+
+        except openai.RateLimitError as e:
+            rate_limit_errors.inc()
+            logger.warning(f"Rate limit hit for {self.evaluator.chain_name}: {str(e)}")
+            raise
+
+    def invoke(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Synchronous wrapper for ainvoke.
+
+        :param inputs: Chain inputs.
+        :return: Chain outputs.
+        """
+        return asyncio.run(self.ainvoke(inputs))
+
+
 class BaseEvaluator(ABC):
     """
     Abstract base class for all evaluators. Provides common functionality for LLM chains, caching, and monitoring.
@@ -53,10 +129,12 @@ class BaseEvaluator(ABC):
 
         # Initialize LLM
         self.llm = ChatOpenAI(
-            model=settings.openai_model, temperature=settings.openai_temperature, openai_api_key=settings.openai_api_key
+            model=settings.openai_model,
+            temperature=settings.openai_temperature,
+            openai_api_key=settings.openai_api_key,
         )
 
-        # Initialize chain
+        # Initialize monitored chain
         self.chain = self._create_chain()
 
         logger.info(f"Initialized {chain_name} evaluator")
@@ -66,9 +144,9 @@ class BaseEvaluator(ABC):
         """
         Gets the key for this evaluator's prompt in the prompt manager.
 
-        :return: Prompt key (e.g., 'plausibility', 'technical').
+        :return: Prompt key (e.g., "plausibility", "technical").
         """
-        pass
+        raise NotImplementedError
 
     def _get_cache_namespace(self) -> str:
         """
@@ -81,11 +159,11 @@ class BaseEvaluator(ABC):
             return f"{base_namespace}_{self.cache_namespace_suffix}"
         return base_namespace
 
-    def _create_chain(self) -> "MonitoredChain":
+    def _create_chain(self) -> MonitoredChain:
         """
-        Creates the evaluator's LLM chain with prompt, LLM, and output parser.
+        Creates the evaluator's LLM chain with prompt, LLM, and output parser, then wraps it as a MonitoredChain.
 
-        :return: Configured LangChain chain object.
+        :return: Configured MonitoredChain object.
         """
         # Get prompt template
         prompt_template = self.prompt_manager.get_prompt(self.get_prompt_key())
@@ -97,99 +175,14 @@ class BaseEvaluator(ABC):
         parser = JsonOutputParser()
         base_chain = prompt | self.llm | parser
 
-        # Wrap with monitoring and retry logic
-        return self._create_monitored_chain(base_chain)
-
-    def _create_monitored_chain(self, base_chain) -> "MonitoredChain":
-        """
-        Wraps a chain with monitoring, caching, and retry logic.
-
-        :param base_chain: Base LangChain chain to wrap.
-        :return: Wrapped chain with monitoring and caching.
-        """
-
-        class MonitoredChain:
-            """
-            Wrapper for a chain with monitoring, caching, and retry.
-            """
-
-            def __init__(self, chain, evaluator) -> None:
-                """
-                Initializes monitored chain wrapper.
-
-                :param chain: Base chain to wrap.
-                :param evaluator: Evaluator instance for context.
-                :return: None.
-                """
-                self.chain = chain
-                self.evaluator = evaluator
-
-            @retry(
-                stop=stop_after_attempt(3),
-                wait=wait_exponential(multiplier=1, min=4, max=60),
-                retry=retry_if_exception_type(openai.RateLimitError),
-            )
-            async def ainvoke(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-                """
-                Async invoke with monitoring and retry.
-
-                :param inputs: Chain inputs.
-                :return: Chain outputs.
-                """
-                llm_calls.labels(chain_type=self.evaluator.chain_name).inc()
-
-                # Check the cache if available
-                cache_key = self.evaluator._get_cache_key(inputs)
-                if self.evaluator.cache and cache_key:
-                    cached_result = self.evaluator.cache.get(
-                        namespace=self.evaluator._get_cache_namespace(), key=cache_key
-                    )
-                    if cached_result is not None:
-                        ColoredLogger.log_cache_hit(self.evaluator.chain_name, cache_key)
-                        return cached_result
-
-                # Log input
-                ColoredLogger.log_llm_input(self.evaluator.chain_name, inputs)
-
-                try:
-                    # Invoke chain
-                    result = await self.chain.ainvoke(inputs)
-
-                    # Log output
-                    ColoredLogger.log_llm_output(self.evaluator.chain_name, result)
-
-                    # Cache result if available
-                    if self.evaluator.cache and cache_key:
-                        self.evaluator.cache.set(
-                            namespace=self.evaluator._get_cache_namespace(),
-                            key=cache_key,
-                            value=result,
-                            ttl=self.evaluator.settings.cache_ttl_seconds,
-                        )
-
-                    return result
-
-                except openai.RateLimitError as e:
-                    rate_limit_errors.inc()
-                    logger.warning(f"Rate limit hit for {self.evaluator.chain_name}: {str(e)}")
-                    raise
-
-            def invoke(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-                """
-                Synchronous invoke wrapper.
-
-                :param inputs: Chain inputs.
-                :return: Chain outputs.
-                """
-                return asyncio.run(self.ainvoke(inputs))
-
+        # Return wrapped chain
         return MonitoredChain(base_chain, self)
 
     def _get_cache_key(self, inputs: Dict[str, Any]) -> Optional[str]:
         """
         Generates a cache key for the given inputs. Override in subclasses for custom caching strategies.
 
-        :param inputs: Chain inputs,
+        :param inputs: Chain inputs.
         :return: Cache key or None to skip caching.
         """
         # Create a deterministic hash of the inputs
@@ -207,16 +200,16 @@ class BaseEvaluator(ABC):
         """
         Performs evaluation with the given inputs.
 
-        :return: Evaluation results dictionary
+        :return: Evaluation results dictionary.
         """
-        pass
+        raise NotImplementedError
 
     def validate_result(self, result: Dict[str, Any]) -> bool:
         """
         Validates the structure of the evaluation result. Override in subclasses for specific validation.
 
         :param result: Evaluation result.
-        :return: True if valid.
+        :return: True if valid, False otherwise.
         """
         return isinstance(result, dict)
 

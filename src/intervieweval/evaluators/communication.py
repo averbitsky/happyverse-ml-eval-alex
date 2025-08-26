@@ -1,9 +1,9 @@
 """
-Communication skills evaluator
+Communication skills evaluator.
 """
 
 import logging
-from typing import Dict, Any
+from typing import Any, Dict
 
 from intervieweval.evaluators.base import BaseEvaluator
 from intervieweval.models.evaluation import CommunicationResult
@@ -17,6 +17,15 @@ class CommunicationEvaluator(BaseEvaluator):
     """
 
     def __init__(self, settings, prompt_manager, cache=None, cache_namespace_suffix=""):
+        """
+        Initialize communication evaluator.
+
+        :param settings: Configuration settings.
+        :param prompt_manager: Prompt template manager.
+        :param cache: Optional persistent cache.
+        :param cache_namespace_suffix: Suffix for cache namespace to prevent cross-contamination.
+        :return: None.
+        """
         super().__init__(
             settings, prompt_manager, cache, chain_name="COMMUNICATION", cache_namespace_suffix=cache_namespace_suffix
         )
@@ -26,14 +35,11 @@ class CommunicationEvaluator(BaseEvaluator):
 
     async def evaluate(self, question: str, response: str) -> CommunicationResult:
         """
-        Evaluate the communication effectiveness of a candidate's response.
+        Evaluates the communication effectiveness of a candidate's response.
 
-        Args:
-            question: Interview question
-            response: Candidate's response
-
-        Returns:
-            CommunicationResult with scores and analysis
+        :param question: Interview question.
+        :param response: Candidate's response.
+        :return: CommunicationResult with scores and analysis
         """
         # Prepare inputs
         inputs = {"question": question, "response": response}
@@ -46,12 +52,15 @@ class CommunicationEvaluator(BaseEvaluator):
             logger.error(f"Invalid communication evaluation result: {result}")
             raise ValueError("Communication evaluation failed validation")
 
-        # Convert to Pydantic model
+        # Convert to a Pydantic model
         return CommunicationResult(**result)
 
     def validate_result(self, result: Dict[str, Any]) -> bool:
         """
-        Validate communication evaluation result structure.
+        Validates communication evaluation result structure.
+
+        :param result: Evaluation result.
+        :return: True if valid, False otherwise.
         """
         required_fields = [
             "communication_score",

@@ -2,37 +2,37 @@
 Evaluation orchestrator that coordinates all evaluators and manages parallel execution.
 """
 
-import logging
 import asyncio
-import time
-import re
 import hashlib
-from typing import List, Tuple, Dict, Any, Optional
+import logging
+import re
+import time
 from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
 
-from intervieweval.config.settings import Settings
-from intervieweval.prompts.manager import PromptManager
 from intervieweval.cache.manager import PersistentCache
+from intervieweval.config.settings import Settings
 from intervieweval.evaluators.base import EvaluatorFactory
-from intervieweval.evaluators.plausibility import PlausibilityEvaluator
-from intervieweval.evaluators.technical import TechnicalEvaluator
 from intervieweval.evaluators.communication import CommunicationEvaluator
+from intervieweval.evaluators.plausibility import PlausibilityEvaluator
 from intervieweval.evaluators.synthesis import SynthesisEvaluator
-from intervieweval.tools.verification import EntityVerifier
+from intervieweval.evaluators.technical import TechnicalEvaluator
 from intervieweval.models.evaluation import (
-    FinalEvaluation,
-    BatchEvaluationResult,
-    QuestionEvaluation,
     AggregateScore,
     AggregateScores,
+    BatchEvaluationResult,
     EvaluationMetadata,
+    FinalEvaluation,
+    QuestionEvaluation,
 )
+from intervieweval.prompts.manager import PromptManager
+from intervieweval.tools.verification import EntityVerifier
 from intervieweval.utils.logging import ColoredLogger
 from intervieweval.utils.metrics import (
+    batch_size as batch_size_metric,
     evaluation_counter,
     evaluation_duration,
     parallel_tasks,
-    batch_size as batch_size_metric,
 )
 
 logger = logging.getLogger(__name__)
@@ -40,18 +40,16 @@ logger = logging.getLogger(__name__)
 
 class EvaluationOrchestrator:
     """
-    Orchestrates the entire evaluation process, coordinating all evaluators
-    and managing parallel execution.
+    Orchestrates the entire evaluation process, coordinating all evaluators and managing parallel execution.
     """
 
     def __init__(self, settings: Settings, prompt_manager: PromptManager, cache: Optional[PersistentCache] = None):
         """
-        Initialize the evaluation orchestrator.
+        Initializes the evaluation orchestrator.
 
-        Args:
-            settings: Configuration settings
-            prompt_manager: Prompt template manager
-            cache: Optional persistent cache
+        :param settings: Configuration settings.
+        :param prompt_manager: Prompt template manager.
+        :param cache: Optional persistent cache.
         """
         self.settings = settings
         self.prompt_manager = prompt_manager
@@ -65,14 +63,11 @@ class EvaluationOrchestrator:
 
     def _create_evaluators_for_transcript(self, transcript_hash: str):
         """
-        Create fresh evaluator instances for a specific transcript.
-        This prevents state contamination between different transcript evaluations.
+        Creates new evaluator instances for a specific transcript. This prevents state contamination between different
+        transcript evaluations.
 
-        Args:
-            transcript_hash: Hash of the transcript for cache namespacing
-
-        Returns:
-            Tuple of (plausibility_evaluator, technical_evaluator, communication_evaluator, verifier)
+        :param transcript_hash: Hash of the transcript for cache namespacing.
+        :return: Tuple of (plausibility_evaluator, technical_evaluator, communication_evaluator, verifier).
         """
         # Create evaluators with transcript-specific namespacing
         plausibility_evaluator = PlausibilityEvaluator(
@@ -92,13 +87,10 @@ class EvaluationOrchestrator:
 
     def _get_transcript_hash(self, transcript: str) -> str:
         """
-        Generate a hash for a transcript for cache namespacing.
+        Generates a hash for a transcript for cache namespacing.
 
-        Args:
-            transcript: Transcript content
-
-        Returns:
-            Short hash string
+        :param transcript: Transcript content.
+        :return: Short hash string
         """
         return hashlib.md5(transcript.encode()).hexdigest()[:8]
 
@@ -113,19 +105,16 @@ class EvaluationOrchestrator:
         verifier,
     ) -> QuestionEvaluation:
         """
-        Evaluate a single question-answer pair.
+        Evaluates a single question-answer pair.
 
-        Args:
-            job_description: Job requirements
-            question: Interview question
-            response: Candidate's response
-            plausibility_evaluator: Plausibility evaluator instance
-            technical_evaluator: Technical evaluator instance
-            communication_evaluator: Communication evaluator instance
-            verifier: Entity verifier instance
-
-        Returns:
-            QuestionEvaluation with all assessment results
+        :param job_description: Job requirements.
+        :param question: Interview question.
+        :param response: Candidate's response.
+        :param plausibility_evaluator: Plausibility evaluator instance.
+        :param technical_evaluator: Technical evaluator instance.
+        :param communication_evaluator: Communication evaluator instance.
+        :param verifier: Entity verifier instance.
+        :return: QuestionEvaluation with all assessment results.
         """
         # Clean question (remove Q1: prefixes etc)
         clean_question = self._clean_question(question)
@@ -181,15 +170,12 @@ class EvaluationOrchestrator:
 
     async def evaluate_transcript(self, job_description: str, questions: List[str], transcript: str) -> FinalEvaluation:
         """
-        Evaluate an entire transcript.
+        Evaluates a transcript.
 
-        Args:
-            job_description: Job requirements
-            questions: List of interview questions
-            transcript: Full transcript text
-
-        Returns:
-            FinalEvaluation with complete results
+        :param job_description: Job requirements.
+        :param questions: List of interview questions.
+        :param transcript: Full transcript text.
+        :return: FinalEvaluation with complete results.
         """
         start_time = time.time()
         evaluation_counter.inc()
@@ -242,7 +228,7 @@ class EvaluationOrchestrator:
         duration = time.time() - start_time
         cache_hit_rate = self._calculate_cache_hit_rate()
 
-        # Create final evaluation
+        # Create the final evaluation
         final_eval = FinalEvaluation(
             individual_evaluations=all_evaluations,
             aggregate_scores=aggregate_scores,
@@ -268,16 +254,13 @@ class EvaluationOrchestrator:
         self, job_description: str, questions: List[str], transcripts: List[str]
     ) -> BatchEvaluationResult:
         """
-        Evaluate multiple transcripts in batch.
-        IMPORTANT: Each transcript gets its own evaluator instances to prevent contamination.
+        Evaluates multiple transcripts in a batch. Each transcript gets its own evaluator instances to prevent
+        contamination.
 
-        Args:
-            job_description: Job requirements
-            questions: List of interview questions
-            transcripts: List of transcript texts
-
-        Returns:
-            BatchEvaluationResult with all evaluations
+        :param job_description: Job requirements.
+        :param questions: List of interview questions.
+        :param transcripts: List of transcript texts.
+        :return: BatchEvaluationResult with all evaluations.
         """
         batch_start = time.time()
         batch_size_metric.observe(len(transcripts))
@@ -305,12 +288,23 @@ class EvaluationOrchestrator:
         )
 
     def _clean_question(self, question: str) -> str:
-        """Remove 'Question X:' or 'QX:' prefixes from questions."""
+        """
+        Removes 'Question X:' or 'QX:' prefixes from questions.
+
+        :param question: Original question text.
+        :return: Cleaned question text.
+        """
         cleaned = re.sub(r"^(Question\s+\d+:|Q\d+:)\s*", "", question, flags=re.IGNORECASE)
         return cleaned.strip()
 
     def _parse_transcript(self, transcript: str, questions: List[str]) -> List[Tuple[str, str]]:
-        """Parse transcript into question-answer pairs."""
+        """
+        Parses a transcript into question-answer pairs.
+
+        :param transcript: Full transcript text.
+        :param questions: List of interview questions.
+        :return: List of (question, answer) tuples.
+        """
         qa_pairs = []
 
         # Try to split by Q1, Q2, Q3 patterns
@@ -350,7 +344,12 @@ class EvaluationOrchestrator:
         return qa_pairs
 
     def _calculate_aggregate_scores(self, evaluations: List[QuestionEvaluation]) -> AggregateScores:
-        """Calculate aggregate scores across all evaluations."""
+        """
+        Calculates aggregate scores across all evaluations.
+
+        :param evaluations: List of QuestionEvaluation objects.
+        :return: AggregateScores with mean, min, max for each category.
+        """
         if not evaluations:
             return AggregateScores(
                 plausibility=AggregateScore(mean=0, min=0, max=0, all_scores=[]),
@@ -376,7 +375,12 @@ class EvaluationOrchestrator:
         )
 
     def _format_verification_results(self, verification_results: Dict[str, Any]) -> str:
-        """Format verification results for inclusion in prompts."""
+        """
+        Formats verification results for inclusion in prompts.
+
+        :param verification_results: Dictionary of verification results.
+        :return: Formatted string.
+        """
         if not verification_results:
             return "No verification performed"
 
@@ -400,7 +404,11 @@ class EvaluationOrchestrator:
         return "\n".join(formatted_parts) if formatted_parts else "No verification results"
 
     def _calculate_cache_hit_rate(self) -> float:
-        """Calculate cache hit rate from cache statistics."""
+        """
+        Calculates cache hit rate from cache statistics.
+
+        :return: Cache hit rate as a float between 0 and 1.
+        """
         if not self.cache:
             return 0.0
 
