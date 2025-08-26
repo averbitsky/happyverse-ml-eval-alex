@@ -1,6 +1,5 @@
 """
 Plausibility evaluator for assessing truthfulness and feasibility
-Location: src/intervieweval/evaluators/plausibility.py
 """
 
 import logging

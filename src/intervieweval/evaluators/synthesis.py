@@ -1,6 +1,5 @@
 """
 Synthesis evaluator for final hiring recommendations
-Location: src/intervieweval/evaluators/synthesis.py
 """
 
 import logging

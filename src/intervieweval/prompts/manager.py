@@ -1,6 +1,5 @@
 """
 Prompt Manager for loading and managing evaluation prompts from YAML
-Location: src/intervieweval/prompts/manager.py
 """
 
 import yaml

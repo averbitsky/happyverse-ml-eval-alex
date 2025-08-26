@@ -1,6 +1,5 @@
 """
-Prometheus metrics for monitoring the evaluation system
-Location: src/intervieweval/utils/metrics.py
+Prometheus metrics for monitoring the evaluation system.
 """
 
 from prometheus_client import Counter, Histogram, Gauge, Summary

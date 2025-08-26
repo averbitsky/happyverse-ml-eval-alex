@@ -1,6 +1,5 @@
 """
-Web search tool with caching support
-Location: src/intervieweval/tools/search.py
+Web search tool with caching support.
 """
 
 import logging

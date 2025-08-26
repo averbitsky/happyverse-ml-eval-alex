@@ -1,6 +1,5 @@
 """
 Technical proficiency evaluator
-Location: src/intervieweval/evaluators/technical.py
 """
 
 import logging

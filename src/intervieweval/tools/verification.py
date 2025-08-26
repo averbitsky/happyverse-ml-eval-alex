@@ -1,6 +1,5 @@
 """
-Entity verification tools for fact-checking claims
-Location: src/intervieweval/tools/verification.py
+Entity verification tools for fact-checking claims in candidate responses.
 """
 
 import logging

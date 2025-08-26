@@ -1,6 +1,5 @@
 """
 Configuration settings management using Pydantic
-Location: src/intervieweval/config/settings.py
 """
 
 from pydantic_settings import BaseSettings

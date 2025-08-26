@@ -1,6 +1,5 @@
 """
-Main entry point for running candidate evaluations
-Location: src/run_evaluation.py
+Main entry point for running candidate evaluations with visualization.
 """
 
 import os
@@ -24,6 +23,7 @@ from intervieweval.cache.manager import PersistentCache
 from intervieweval.evaluators.orchestrator import EvaluationOrchestrator
 from intervieweval.utils.logging import setup_logging, ColoredLogger
 from intervieweval.utils.metrics import setup_metrics
+from intervieweval.visualization.visualization import EvaluationVisualizer
 
 # Initialize colorama
 init(autoreset=True)
@@ -154,9 +154,10 @@ async def evaluate_candidates(
     questions: List[str],
     transcripts: Dict[str, str],
     output_dir: Path,
+    generate_visualizations: bool = True,
 ) -> List:
     """
-    Evaluate multiple candidate transcripts.
+    Evaluate multiple candidate transcripts with optional visualizations.
 
     Args:
         orchestrator: Evaluation orchestrator
@@ -164,12 +165,19 @@ async def evaluate_candidates(
         questions: List of interview questions
         transcripts: Dictionary mapping filename to transcript content
         output_dir: Directory to save results
+        generate_visualizations: Whether to generate visualization slides
 
     Returns:
         List of evaluation results
     """
     # Create output directory
     output_dir.mkdir(exist_ok=True)
+
+    # Create visualization directory if needed
+    if generate_visualizations:
+        viz_dir = output_dir / "visualizations"
+        viz_dir.mkdir(exist_ok=True)
+        visualizer = EvaluationVisualizer(viz_dir)
 
     # Extract transcript contents
     transcript_files = list(transcripts.keys())
@@ -190,17 +198,38 @@ async def evaluate_candidates(
         print(f"  • Total time: {batch_result.batch_metadata['total_duration_seconds']:.2f} seconds")
         print(f"  • Average per transcript: {batch_result.batch_metadata['average_duration_seconds']:.2f} seconds")
 
-    # Save results
+    # Save results and generate visualizations
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    visualization_paths = []
 
     for i, (filename, evaluation) in enumerate(zip(transcript_files, evaluations), 1):
-        # Create filename based on original transcript name
+        # Create filename based on the original transcript name
         base_name = Path(filename).stem
-        result_file = output_dir / f"evaluation_{base_name}_{timestamp}.json"
+        candidate_name = base_name.replace("_", " ").title()
 
+        # Save JSON result
+        result_file = output_dir / f"evaluation_{base_name}_{timestamp}.json"
         with open(result_file, "w") as f:
             json.dump(evaluation.model_dump(), f, indent=2)
         print(f"  ✓ Saved evaluation for {filename} to {result_file}")
+
+        # Generate visualization if requested
+        if generate_visualizations:
+            try:
+                viz_path = visualizer.create_evaluation_slide(evaluation.model_dump(), candidate_name=candidate_name)
+                visualization_paths.append(viz_path)
+                print(f"  ✓ Generated visualization: {viz_path}")
+            except Exception as e:
+                print(f"  ⚠ Failed to generate visualization: {e}")
+
+    # Generate comparison visualization if multiple candidates
+    if generate_visualizations and len(evaluations) > 1:
+        try:
+            candidate_names = [Path(f).stem.replace("_", " ").title() for f in transcript_files]
+            comparison_path = visualizer.create_batch_comparison([e.model_dump() for e in evaluations], candidate_names)
+            print(f"  ✓ Generated comparison visualization: {comparison_path}")
+        except Exception as e:
+            print(f"  ⚠ Failed to generate comparison visualization: {e}")
 
     # Save summary if multiple evaluations
     if len(evaluations) > 1:
@@ -242,6 +271,7 @@ def main():
     # Feature flags
     parser.add_argument("--no-cache", action="store_true", help="Disable caching")
     parser.add_argument("--no-metrics", action="store_true", help="Disable Prometheus metrics server")
+    parser.add_argument("--no-visualization", action="store_true", help="Disable visualization generation")
     parser.add_argument("--clean-cache", action="store_true", help="Clean expired cache entries before starting")
     parser.add_argument("--export-cache", action="store_true", help="Export cache after evaluation")
 
@@ -335,7 +365,14 @@ def main():
     try:
         output_dir = settings.get_output_dir()
         evaluations = asyncio.run(
-            evaluate_candidates(orchestrator, job_description, questions, transcripts, output_dir)
+            evaluate_candidates(
+                orchestrator,
+                job_description,
+                questions,
+                transcripts,
+                output_dir,
+                generate_visualizations=not args.no_visualization,
+            )
         )
 
         # Print summaries
@@ -379,6 +416,9 @@ def main():
                 )
 
         print(f"\n{Fore.GREEN}✓ Evaluation complete!{Style.RESET_ALL}")
+
+        if not args.no_visualization:
+            print(f"\n{Fore.CYAN} Visualizations have been generated in: {output_dir}/visualizations/{Style.RESET_ALL}")
 
     except Exception as e:
         print(f"{Fore.RED}Error during evaluation: {e}{Style.RESET_ALL}")

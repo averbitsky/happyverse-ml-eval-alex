@@ -1,6 +1,5 @@
 """
-Evaluation orchestrator that coordinates all evaluators
-Location: src/intervieweval/evaluators/orchestrator.py
+Evaluation orchestrator that coordinates all evaluators and manages parallel execution.
 """
 
 import logging

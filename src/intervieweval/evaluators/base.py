@@ -1,6 +1,5 @@
 """
 Base evaluator class with common functionality
-Location: src/intervieweval/evaluators/base.py
 """
 
 import logging

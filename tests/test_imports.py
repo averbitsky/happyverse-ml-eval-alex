@@ -14,7 +14,7 @@ from intervieweval import (
     EvaluationOrchestrator,
     FinalEvaluation,
     RecommendationLevel,
-    __version__
+    __version__,
 )
 from intervieweval.evaluators.plausibility import PlausibilityEvaluator
 from intervieweval.models.evaluation import PlausibilityResult, TechnicalResult
@@ -56,9 +56,9 @@ class TestImports:
         assert setup_logging is not None
 
         # Test ColoredLogger methods exist
-        assert hasattr(ColoredLogger, 'log_agent_thought')
-        assert hasattr(ColoredLogger, 'log_llm_input')
-        assert hasattr(ColoredLogger, 'log_success')
+        assert hasattr(ColoredLogger, "log_agent_thought")
+        assert hasattr(ColoredLogger, "log_llm_input")
+        assert hasattr(ColoredLogger, "log_success")
 
 
 class TestEvaluatorIntegration:
@@ -72,14 +72,15 @@ class TestEvaluatorIntegration:
             openai_model="gpt-3.5-turbo",
             enable_metrics=False,
             enable_search_cache=False,
-            enable_prompt_cache=False
+            enable_prompt_cache=False,
         )
 
     @pytest.fixture
     def prompt_manager(self, tmp_path):
         """Create test prompt manager with minimal prompts"""
         prompts_file = tmp_path / "prompts.yaml"
-        prompts_file.write_text("""
+        prompts_file.write_text(
+            """
 prompts:
   plausibility:
     template: "Test plausibility prompt {job_description} {question} {response} {search_results}"
@@ -93,17 +94,14 @@ prompts:
     template: "Test entity extraction {response}"
   claim_verification:
     template: "Test claim verification {claim}"
-""")
+"""
+        )
         return PromptManager(str(prompts_file))
 
     def test_orchestrator_creation(self, settings, prompt_manager):
         """Test that orchestrator can be created with proper imports"""
         # This would normally require mocking the LLM calls
-        orchestrator = EvaluationOrchestrator(
-            settings=settings,
-            prompt_manager=prompt_manager,
-            cache=None
-        )
+        orchestrator = EvaluationOrchestrator(settings=settings, prompt_manager=prompt_manager, cache=None)
         assert orchestrator is not None
 
 

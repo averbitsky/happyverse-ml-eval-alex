@@ -1,6 +1,5 @@
 """
-Logging utilities with colored output
-Location: src/intervieweval/utils/logging.py
+Logging utilities with colored output for LLM interactions and system events.
 """
 
 import logging

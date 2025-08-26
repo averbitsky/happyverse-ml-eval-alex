@@ -1,6 +1,5 @@
 """
 Communication skills evaluator
-Location: src/intervieweval/evaluators/communication.py
 """
 
 import logging
