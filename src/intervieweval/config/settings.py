@@ -1,11 +1,12 @@
 """
-Configuration settings management using Pydantic
+Configuration settings management using Pydantic.
 """
 
-from pydantic_settings import BaseSettings
-from pydantic import Field
-from typing import Optional
 from pathlib import Path
+from typing import Optional
+
+from pydantic import Field
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):

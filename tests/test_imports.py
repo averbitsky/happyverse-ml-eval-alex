@@ -1,19 +1,17 @@
 """
-Example test file showing proper import patterns
-Location: tests/test_imports.py
+Test import patterns.
 """
 
 import pytest
-from pathlib import Path
 
 # All imports use the package name 'intervieweval'
 from intervieweval import (
-    Settings,
-    PromptManager,
-    PersistentCache,
     EvaluationOrchestrator,
     FinalEvaluation,
+    PersistentCache,
+    PromptManager,
     RecommendationLevel,
+    Settings,
     __version__,
 )
 from intervieweval.evaluators.plausibility import PlausibilityEvaluator

@@ -2,28 +2,27 @@
 Main entry point for running candidate evaluations with visualization.
 """
 
-import os
-import sys
-import json
-import asyncio
 import argparse
-from pathlib import Path
+import asyncio
+import json
+import sys
 from datetime import datetime
-from typing import List, Optional, Dict
+from pathlib import Path
+from typing import Dict, List
 
-from colorama import init, Fore, Style
+from colorama import Fore, Style, init
 from dotenv import load_dotenv
+
+from intervieweval.cache.manager import PersistentCache
+from intervieweval.config.settings import Settings
+from intervieweval.evaluators.orchestrator import EvaluationOrchestrator
+from intervieweval.prompts.manager import PromptManager
+from intervieweval.utils.logging import setup_logging
+from intervieweval.utils.metrics import setup_metrics
+from intervieweval.visualization.visualization import EvaluationVisualizer
 
 # Load environment variables
 load_dotenv()
-
-from intervieweval.config.settings import Settings
-from intervieweval.prompts.manager import PromptManager
-from intervieweval.cache.manager import PersistentCache
-from intervieweval.evaluators.orchestrator import EvaluationOrchestrator
-from intervieweval.utils.logging import setup_logging, ColoredLogger
-from intervieweval.utils.metrics import setup_metrics
-from intervieweval.visualization.visualization import EvaluationVisualizer
 
 # Initialize colorama
 init(autoreset=True)
