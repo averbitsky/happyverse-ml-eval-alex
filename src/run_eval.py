@@ -101,7 +101,7 @@ def print_evaluation_summary(evaluation, candidate_name: str) -> None:
 
     # Scores
     scores = evaluation.aggregate_scores
-    print(f"\nSCORES:")
+    print("\nSCORES:")
     print(f"  • Plausibility:   {scores.plausibility.mean:.1f}/100")
     print(f"  • Technical:      {scores.technical.mean:.1f}/100")
     print(f"  • Communication:  {scores.communication.mean:.1f}/100")
@@ -147,7 +147,7 @@ def print_cache_stats(cache: PersistentCache) -> None:
     print(f"  • Total misses: {stats['total_misses']}")
 
     if stats.get("namespaces"):
-        print(f"\n  Namespace breakdown:")
+        print("\n  Namespace breakdown:")
         for namespace, count in stats["namespaces"].items():
             print(f"    - {namespace}: {count} items")
 
@@ -348,14 +348,14 @@ def main() -> None:
             status = "✓" if valid else "✗"
             print(f"  {status} {name}")
     else:
-        print(f"  ✓ All prompts validated successfully")
+        print("  ✓ All prompts validated successfully")
 
     # Load data
     print("\nLoading data files...")
     try:
         # Load job description and questions
         job_description, questions = load_data_files(settings)
-        print(f"  ✓ Loaded job description")
+        print("  ✓ Loaded job description")
         print(f"  ✓ Loaded {len(questions)} questions")
 
         # Load all transcripts from directory

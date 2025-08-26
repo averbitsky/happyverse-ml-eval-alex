@@ -79,7 +79,7 @@ class CommunicationEvaluator(BaseEvaluator):
         ]
 
         if not all(field in result for field in required_fields):
-            logger.warning(f"Missing required fields in communication result")
+            logger.warning("Missing required fields in communication result")
             return False
 
         # Validate score range

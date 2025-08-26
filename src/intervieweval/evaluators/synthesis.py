@@ -100,7 +100,7 @@ class SynthesisEvaluator(BaseEvaluator):
         ]
 
         if not all(field in result for field in required_fields):
-            logger.warning(f"Missing required fields in synthesis result")
+            logger.warning("Missing required fields in synthesis result")
             return False
 
         # Validate recommendation level

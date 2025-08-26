@@ -337,11 +337,10 @@ Focus on entities that are:
         matches = sum(1 for term in key_terms if term.lower() in search_result.lower())
 
         if matches == 0:
-            return f"No supporting information found for this claim"
-        elif matches < len(key_terms) / 2:
-            return f"Limited supporting information found. Claim may be exaggerated or partially incorrect."
-        else:
-            return f"Found some supporting information: {search_result[:300]}"
+            return "No supporting information found for this claim"
+        if matches < len(key_terms) / 2:
+            return "Limited supporting information found. Claim may be exaggerated or partially incorrect."
+        return f"Found some supporting information: {search_result[:300]}"
 
     @staticmethod
     def _extract_key_terms(text: str) -> List[str]:

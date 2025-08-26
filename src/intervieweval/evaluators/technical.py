@@ -88,7 +88,7 @@ class TechnicalEvaluator(BaseEvaluator):
         ]
 
         if not all(field in result for field in required_fields):
-            logger.warning(f"Missing required fields in technical result")
+            logger.warning("Missing required fields in technical result")
             return False
 
         # Validate score range

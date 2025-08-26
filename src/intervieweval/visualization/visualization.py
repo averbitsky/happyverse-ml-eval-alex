@@ -549,12 +549,11 @@ class EvaluationVisualizer:
         """
         if score >= self.score_thresholds["excellent"]:
             return self.colors["Strong Yes"]
-        elif score >= self.score_thresholds["good"]:
+        if score >= self.score_thresholds["good"]:
             return self.colors["info"]
-        elif score >= self.score_thresholds["fair"]:
+        if score >= self.score_thresholds["fair"]:
             return self.colors["Weak No"]
-        else:
-            return self.colors["Strong No"]
+        return self.colors["Strong No"]
 
     def _get_confidence_color(self, confidence: float) -> str:
         """
@@ -565,12 +564,11 @@ class EvaluationVisualizer:
         """
         if confidence >= 0.85:
             return self.colors["Strong Yes"]
-        elif confidence >= 0.70:
+        if confidence >= 0.70:
             return self.colors["info"]
-        elif confidence >= 0.50:
+        if confidence >= 0.50:
             return self.colors["Weak No"]
-        else:
-            return self.colors["Strong No"]
+        return self.colors["Strong No"]
 
     def _get_performance_level(self, score: float) -> str:
         """
@@ -581,12 +579,11 @@ class EvaluationVisualizer:
         """
         if score >= self.score_thresholds["excellent"]:
             return "Excellent"
-        elif score >= self.score_thresholds["good"]:
+        if score >= self.score_thresholds["good"]:
             return "Good"
-        elif score >= self.score_thresholds["fair"]:
+        if score >= self.score_thresholds["fair"]:
             return "Fair"
-        else:
-            return "Poor"
+        return "Poor"
 
 
 def generate_visualizations_from_json(

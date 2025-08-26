@@ -51,9 +51,9 @@ class ColoredLogger:
         print(f"{Fore.GREEN}{'=' * 60}{Style.RESET_ALL}")
         if isinstance(result, dict):
             for key, value in result.items():
-                if key in ['score', 'plausibility_score', 'technical_score', 'communication_score']:
+                if key in ["score", "plausibility_score", "technical_score", "communication_score"]:
                     print(f"{Fore.GREEN}{key}: {value}{Style.RESET_ALL}")
-                elif key in ['impossible_claims', 'technical_errors', 'red_flags']:
+                elif key in ["impossible_claims", "technical_errors", "red_flags"]:
                     if value:
                         print(f"{Fore.RED}{key}: {value}{Style.RESET_ALL}")
                     else:
@@ -156,16 +156,14 @@ def setup_logging(log_level: str = "INFO", log_format: str = "colored") -> None:
 
     if log_format == "colored":
         # Colored console output
-        format_string = f"{Fore.BLUE}%(asctime)s{Style.RESET_ALL} - {Fore.YELLOW}%(levelname)s{Style.RESET_ALL} - %(message)s"
+        format_string = (
+            f"{Fore.BLUE}%(asctime)s{Style.RESET_ALL} - {Fore.YELLOW}%(levelname)s{Style.RESET_ALL} - %(message)s"
+        )
     else:
         # Standard format for JSON logging
         format_string = "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
 
-    logging.basicConfig(
-        level=level,
-        format=format_string,
-        datefmt="%Y-%m-%d %H:%M:%S"
-    )
+    logging.basicConfig(level=level, format=format_string, datefmt="%Y-%m-%d %H:%M:%S")
 
     # Suppress noisy loggers
     logging.getLogger("httpx").setLevel(logging.WARNING)
