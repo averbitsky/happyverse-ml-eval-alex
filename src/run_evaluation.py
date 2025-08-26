@@ -30,13 +30,10 @@ init(autoreset=True)
 
 def load_transcripts(transcript_dir: Path) -> Dict[str, str]:
     """
-    Load all transcript files from the transcripts directory.
+    Loads all transcript files from the transcripts directory.
 
-    Args:
-        transcript_dir: Directory containing transcript files
-
-    Returns:
-        Dictionary mapping filename to transcript content
+    :param transcript_dir: Directory containing transcript files.
+    :return: Dictionary mapping filename to transcript content.
     """
     transcripts = {}
 
@@ -60,13 +57,10 @@ def load_transcripts(transcript_dir: Path) -> Dict[str, str]:
 
 def load_data_files(settings: Settings) -> tuple[str, List[str]]:
     """
-    Load job description and questions from files.
+    Loads job description and questions from files.
 
-    Args:
-        settings: Application settings
-
-    Returns:
-        Tuple of (job_description, questions)
+    :param settings: Application settings.
+    :return: Tuple of (job_description, questions).
     """
     # Load job description
     job_path = settings.get_job_description_path()
@@ -87,8 +81,14 @@ def load_data_files(settings: Settings) -> tuple[str, List[str]]:
     return job_description, questions
 
 
-def print_evaluation_summary(evaluation, candidate_name: str):
-    """Print a formatted summary of an evaluation."""
+def print_evaluation_summary(evaluation, candidate_name: str) -> None:
+    """
+    Prints a formatted summary of an evaluation.
+
+    :param evaluation: Evaluation result object.
+    :param candidate_name: Name of the candidate.
+    :return: None
+    """
     print(f"\n{Fore.CYAN}{'=' * 70}")
     print(f"EVALUATION SUMMARY: {candidate_name}")
     print(f"{'=' * 70}{Style.RESET_ALL}")
@@ -129,8 +129,13 @@ def print_evaluation_summary(evaluation, candidate_name: str):
     print(f"  • Cache hit rate: {meta.cache_hit_rate:.2%}")
 
 
-def print_cache_stats(cache: PersistentCache):
-    """Print cache statistics."""
+def print_cache_stats(cache: PersistentCache) -> None:
+    """
+    Print cache statistics.
+
+    :param cache: PersistentCache instance.
+    :return: None.
+    """
     stats = cache.get_stats()
 
     print(f"\n{Fore.CYAN}CACHE STATISTICS:{Style.RESET_ALL}")
@@ -156,23 +161,20 @@ async def evaluate_candidates(
     generate_visualizations: bool = True,
 ) -> List:
     """
-    Evaluate multiple candidate transcripts with optional visualizations.
+    Evaluates multiple candidate transcripts with optional visualizations.
 
-    Args:
-        orchestrator: Evaluation orchestrator
-        job_description: Job description text
-        questions: List of interview questions
-        transcripts: Dictionary mapping filename to transcript content
-        output_dir: Directory to save results
-        generate_visualizations: Whether to generate visualization slides
-
-    Returns:
-        List of evaluation results
+    :param orchestrator: Evaluation orchestrator.
+    :param job_description: Job description text.
+    :param questions: List of interview questions.
+    :param transcripts: Dictionary mapping filename to transcript content.
+    :param output_dir: Directory to save results.
+    :param generate_visualizations: Whether to generate visualization slides.
+    :return: List of evaluation results.
     """
-    # Create output directory
+    # Create the output directory
     output_dir.mkdir(exist_ok=True)
 
-    # Create visualization directory if needed
+    # Create the visualization directory if needed
     if generate_visualizations:
         viz_dir = output_dir / "visualizations"
         viz_dir.mkdir(exist_ok=True)
@@ -259,8 +261,18 @@ async def evaluate_candidates(
     return evaluations
 
 
-def main():
-    """Main entry point."""
+def main() -> None:
+    """
+    Main function to run the candidate evaluation system.
+    1. Parse command-line arguments.
+    2. Load settings and initialize components (cache, prompts, orchestrator).
+    3. Load job description, questions, and transcripts.
+    4. Run evaluations and generate visualizations.
+    5. Print summaries and cache statistics.
+    6. Handle errors gracefully and provide user feedback.
+
+    :return: None
+    """
     parser = argparse.ArgumentParser(description="Happyverse ML Evaluation System - Candidate Evaluator")
 
     # Model configuration

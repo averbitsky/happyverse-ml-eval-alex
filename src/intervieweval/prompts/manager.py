@@ -1,29 +1,29 @@
 """
-Prompt Manager for loading and managing evaluation prompts from YAML
+Prompt Manager for loading and managing evaluation prompts from YAML.
 """
 
-import yaml
-from pathlib import Path
-from typing import Dict, Optional
+import hashlib
 import logging
 from datetime import datetime
-import hashlib
+from pathlib import Path
+from typing import Dict, Optional
+
+import yaml
 
 logger = logging.getLogger(__name__)
 
 
 class PromptManager:
     """
-    Manages prompt templates loaded from YAML configuration.
-    Supports versioning, hot-reloading, and validation.
+    Manages prompt templates loaded from YAML configuration. Supports versioning, hot-reloading, and validation.
     """
 
-    def __init__(self, prompt_file: str = "prompts.yaml"):
+    def __init__(self, prompt_file: str = "prompts.yaml") -> None:
         """
-        Initialize prompt manager.
+        Initializes prompt manager.
 
-        Args:
-            prompt_file: Path to YAML file containing prompts
+        :param prompt_file: Path to a YAML file containing prompts.
+        :return: None.
         """
         self.prompt_file = Path(prompt_file)
         self.prompts: Dict[str, Dict] = {}
@@ -35,10 +35,9 @@ class PromptManager:
 
     def load_prompts(self) -> bool:
         """
-        Load prompts from YAML file.
+        Loads prompts from a YAML file.
 
-        Returns:
-            True if successfully loaded
+        :return: True if successfully loaded, False otherwise.
         """
         try:
             if not self.prompt_file.exists():
@@ -48,7 +47,7 @@ class PromptManager:
             with open(self.prompt_file, "r", encoding="utf-8") as f:
                 content = f.read()
 
-                # Check if file has changed
+                # Check if the file has changed
                 new_hash = hashlib.md5(content.encode()).hexdigest()
                 if new_hash == self.file_hash:
                     logger.debug("Prompt file unchanged, skipping reload")
@@ -62,7 +61,7 @@ class PromptManager:
                     logger.error("Invalid prompt file structure: root must be a dictionary")
                     return False
 
-                # Handle both new format (with 'prompts' key) and old format
+                # Handle different formats
                 if "prompts" in data:
                     prompt_data = data["prompts"]
                 else:
@@ -104,10 +103,9 @@ class PromptManager:
 
     def reload_if_changed(self) -> bool:
         """
-        Check if prompt file has changed and reload if necessary.
+        Checks if a prompt file has changed and reload if necessary.
 
-        Returns:
-            True if reloaded or no changes
+        :return: True if reloaded or no changes.
         """
         try:
             # Get current file modification time
@@ -128,15 +126,12 @@ class PromptManager:
 
     def get_prompt(self, prompt_name: str) -> Optional[str]:
         """
-        Get a specific prompt template.
+        Gets a specific prompt template.
 
-        Args:
-            prompt_name: Name of the prompt (e.g., 'plausibility', 'technical')
-
-        Returns:
-            Prompt template string or None if not found
+        :param prompt_name: Name of the prompt (e.g., "plausibility", "technical").
+        :return: Prompt template string or None if not found.
         """
-        # Optionally reload if file changed
+        # Optionally reload if a file changed
         self.reload_if_changed()
 
         if prompt_name in self.prompts:
@@ -147,25 +142,21 @@ class PromptManager:
 
     def get_all_prompts(self) -> Dict[str, str]:
         """
-        Get all prompt templates.
+        Gets all prompt templates.
 
-        Returns:
-            Dictionary of prompt names to templates
+        :return: Dictionary of prompt names to templates
         """
-        # Optionally reload if file changed
+        # Optionally reload if the file changed
         self.reload_if_changed()
 
         return {name: data.get("template") for name, data in self.prompts.items() if "template" in data}
 
     def get_metadata(self, prompt_name: str) -> Dict:
         """
-        Get metadata for a prompt (everything except the template).
+        Gets metadata for a prompt (everything except the template).
 
-        Args:
-            prompt_name: Name of the prompt
-
-        Returns:
-            Dictionary of metadata
+        :param prompt_name: Name of the prompt.
+        :return: Dictionary of metadata.
         """
         if prompt_name in self.prompts:
             metadata = self.prompts[prompt_name].copy()
@@ -176,10 +167,9 @@ class PromptManager:
 
     def validate_prompts(self) -> Dict[str, bool]:
         """
-        Validate all prompts for required placeholders.
+        Validates prompts for required placeholders.
 
-        Returns:
-            Dictionary of prompt names to validation status
+        :return: Dictionary of prompt names to validation status.
         """
         validation_results = {}
 
@@ -207,13 +197,10 @@ class PromptManager:
 
     def export_prompts(self, export_path: str) -> bool:
         """
-        Export current prompts to a new file.
+        Exports current prompts to a new file.
 
-        Args:
-            export_path: Path to export file
-
-        Returns:
-            True if successful
+        :param export_path: Path to the export file.
+        :return: True if successful, False otherwise.
         """
         try:
             export_file = Path(export_path)
@@ -228,7 +215,7 @@ class PromptManager:
                 "prompts": self.prompts,
             }
 
-            # Write to file
+            # Write to a file
             with open(export_file, "w", encoding="utf-8") as f:
                 yaml.dump(export_data, f, default_flow_style=False, sort_keys=False)
 
@@ -241,10 +228,9 @@ class PromptManager:
 
     def get_prompt_stats(self) -> Dict:
         """
-        Get statistics about loaded prompts.
+        Gets statistics about loaded prompts.
 
-        Returns:
-            Dictionary of statistics
+        :return: Dictionary of statistics.
         """
         all_prompts = self.get_all_prompts()
 

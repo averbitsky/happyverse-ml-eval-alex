@@ -4,13 +4,14 @@ Visualization generator for creating professional evaluation slides.
 
 import json
 import logging
-from pathlib import Path
-from typing import Dict, Any, List, Optional
-import matplotlib.pyplot as plt
-from matplotlib.patches import FancyBboxPatch, Rectangle
-from matplotlib.gridspec import GridSpec
-from datetime import datetime
 import textwrap
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
+from matplotlib.patches import FancyBboxPatch, Rectangle
 
 logger = logging.getLogger(__name__)
 
@@ -30,10 +31,16 @@ plt.style.use("seaborn-v0_8-whitegrid")
 
 class EvaluationVisualizer:
     """
-    Creates a single, professional one-slide visualization for a candidate evaluation.
+    Creates a one-slide visualization for a candidate evaluation.
     """
 
-    def __init__(self, output_dir: Optional[Path] = None):
+    def __init__(self, output_dir: Optional[Path] = None) -> None:
+        """
+        Initialize the visualizer with an output directory.
+
+        :param output_dir: Directory to save visualizations.
+        :return: None.
+        """
         self.output_dir = output_dir or Path("output/visualizations")
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -53,7 +60,6 @@ class EvaluationVisualizer:
             "text": "#2C3E50",
             "text_secondary": "#616161",
             "info": "#2196F3",
-            # Use Strong No red for "danger" to avoid multiple reds
             "danger": "#FF3547",
         }
 
@@ -66,15 +72,17 @@ class EvaluationVisualizer:
 
         self.score_thresholds = {"excellent": 85, "good": 70, "fair": 50, "poor": 0}
 
-    # ------------------------ PUBLIC API ------------------------
-
     def create_evaluation_slide(
         self, evaluation_data: Dict[str, Any], candidate_name: str = "Candidate", save_path: Optional[Path] = None
     ) -> Path:
         """
-        Create a professional one-slide evaluation summary for ONE candidate.
+        Creates a professional one-slide evaluation summary for one candidate.
+
+        :param evaluation_data: Dictionary with evaluation results.
+        :param candidate_name: Name of the candidate.
+        :param save_path: Optional path to save the visualization.
+        :return: Path to the saved visualization.
         """
-        # Taller figure to use more vertical space
         fig = plt.figure(figsize=(16, 12), dpi=150)
         fig.patch.set_facecolor(self.colors["background"])
 
@@ -82,11 +90,10 @@ class EvaluationVisualizer:
         scores = evaluation_data["aggregate_scores"]
         individual_evals = evaluation_data.get("individual_evaluations", [])
 
-        # Header (decision removed to avoid redundancy)
+        # Header
         self._add_header(fig, candidate_name)
 
-        # Layout with symmetric side margins; more room for profile & graph
-        # CHANGED: Increased score chart height from 2.4 to 2.8 and reduced hspace
+        # Layout
         gs = GridSpec(
             5,
             3,
@@ -113,7 +120,7 @@ class EvaluationVisualizer:
         ax_scores = fig.add_subplot(gs[2, :])
         self._create_enhanced_score_display(ax_scores, scores, individual_evals)
 
-        # Row 3: three shaded boxes (strengths | concerns | deal breakers)
+        # Row 3: three shaded boxes (strengths | concerns | deal-breakers)
         ax_strengths = fig.add_subplot(gs[3, 0])
         ax_concerns = fig.add_subplot(gs[3, 1])
         ax_breakers = fig.add_subplot(gs[3, 2])
@@ -135,9 +142,14 @@ class EvaluationVisualizer:
         logger.info(f"Saved evaluation visualization to {save_path}")
         return save_path
 
-    # ------------------------ HEADER ------------------------
-
     def _add_header(self, fig, candidate_name: str):
+        """
+        Adds a header with a title and the candidate's name.
+
+        :param fig: Figure object.
+        :param candidate_name: Name of the candidate.
+        :return: None.
+        """
         # Extra top padding before the title
         fig.text(
             0.50,
@@ -161,9 +173,14 @@ class EvaluationVisualizer:
             color=self.colors["text"],
         )
 
-    # ------------------------ DECISION STRIP ------------------------
+    def _create_decision_strip(self, ax, recommendation: Dict[str, Any]) -> None:
+        """
+        Creates a decision strip with confidence, decision, and hiring risk.
 
-    def _create_decision_strip(self, ax, recommendation: Dict[str, Any]):
+        :param ax: Axes object.
+        :param recommendation: Recommendation dictionary.
+        :return: None.
+        """
         ax.clear()
         ax.set_xlim(0, 1)
         ax.set_ylim(0, 1)
@@ -210,12 +227,13 @@ class EvaluationVisualizer:
         )
         ax.text(0.82, 0.42, risk.upper(), fontsize=22, fontweight="bold", ha="center", color=risk_colors[risk])
 
-    # ------------------------ PROFILE CARD ------------------------
-
-    def _create_candidate_profile_card(self, ax, recommendation: Dict[str, Any]):
+    def _create_candidate_profile_card(self, ax, recommendation: Dict[str, Any]) -> None:
         """
-        Candidate Profile: title at y=0.77, text block centered lower with wide wrapping.
-        Uses 'detailed_rationale' with graceful fallback.
+        Creates a candidate profile card with detailed rationale.
+
+        :param ax: Axes object.
+        :param recommendation: Recommendation dictionary.
+        :return: None.
         """
         ax.clear()
         ax.set_xlim(0, 1)
@@ -234,7 +252,7 @@ class EvaluationVisualizer:
         )
         ax.add_patch(card)
 
-        # Title at requested position
+        # Title
         ax.text(
             0.50,
             0.77,
@@ -245,7 +263,7 @@ class EvaluationVisualizer:
             color=self.colors["text_secondary"],
         )
 
-        # Use detailed_rationale (fallback)
+        # Use detailed_rationale with fallback
         profile = recommendation.get(
             "detailed_rationale", recommendation.get("comparison_to_typical", "No rationale provided.")
         )
@@ -253,22 +271,25 @@ class EvaluationVisualizer:
         # Allow maximum width in the box
         wrap_chars_profile = 150
         prof_lines = textwrap.fill(profile, width=wrap_chars_profile).split("\n")
-
-        # Looser spacing and lower centering
         line_h = 0.13
         block_h = len(prof_lines) * line_h
 
-        # Vertically center the text block a bit LOWER in the card
-        start_y = 0.36 + block_h / 2.0  # was 0.42; lowered further
+        # Vertically center the text block
+        start_y = 0.36 + block_h / 2.0
         y = start_y
         for line in prof_lines:
             ax.text(0.50, y, line, fontsize=13.5, color=self.colors["text"], ha="center", va="center")
             y -= line_h
 
-    # ------------------------ SCORES (ENHANCED GRAPH) ------------------------
+    def _create_enhanced_score_display(self, ax, scores: Dict[str, Any], individual_evals: List[Dict]) -> None:
+        """
+        Creates an enhanced score display with proper question circles.
 
-    def _create_enhanced_score_display(self, ax, scores: Dict[str, Any], individual_evals: List[Dict]):
-        """Create enhanced score display with proper question circles."""
+        :param ax: Axes object.
+        :param scores: Aggregate the scores dictionary.
+        :param individual_evals: List of individual question evaluations.
+        :return: None.
+        """
         ax.clear()
         ax.set_xlim(-10, 110)
         ax.set_ylim(-2.0, 3.5)
@@ -318,7 +339,7 @@ class EvaluationVisualizer:
 
                 ax.scatter(q_score, y_pos + y_offset, s=100, color=color, edgecolors="white", linewidth=2, zorder=3)
 
-                # Q labels under each bar (kept low for clarity)
+                # Q labels under each bar
                 ax.text(
                     q_score,
                     y_pos - 0.35,
@@ -343,7 +364,7 @@ class EvaluationVisualizer:
                 color=text_color,
             )
 
-            # Category label (bolded)
+            # Category label
             ax.text(
                 -3,
                 y_pos,
@@ -368,7 +389,7 @@ class EvaluationVisualizer:
                 color=self._get_score_color(avg_score),
             )
 
-        # Caption (legend) moved even lower
+        # Caption (legend)
         ax.text(
             50,
             -0.90,
@@ -383,11 +404,15 @@ class EvaluationVisualizer:
         ax.set_ylim(-2.0, 3.5)
         ax.axis("off")
 
-    # ------------------------ THREE SHADED BOXES ------------------------
-
-    def _add_three_shaded_boxes(self, ax_strengths, ax_concerns, ax_breakers, recommendation: Dict[str, Any]):
+    def _add_three_shaded_boxes(self, ax_strengths, ax_concerns, ax_breakers, recommendation: Dict[str, Any]) -> None:
         """
-        Titles offset; bullets left-aligned; bullets block vertically centered.
+        Adds three shaded boxes for strengths, concerns, and deal-breakers.
+
+        :param ax_strengths: Axes for strengths.
+        :param ax_concerns: Axes for concerns".
+        :param ax_breakers: Axes for dealbreakers.
+        :param recommendation: Recommendation dictionary.
+        :return: None.
         """
         for ax in (ax_strengths, ax_concerns, ax_breakers):
             ax.clear()
@@ -412,7 +437,7 @@ class EvaluationVisualizer:
             ),
             (
                 ax_breakers,
-                "DEAL BREAKERS",
+                "DEAL-BREAKERS",
                 self.colors["Strong No"],
                 self.shaded["breakers_fill"],
                 recommendation.get("deal_breakers", [])[:5] or ["None"],
@@ -435,7 +460,7 @@ class EvaluationVisualizer:
             # Title placement within the box
             ax.text(0.50, 0.80, title, fontsize=14, fontweight="bold", ha="center", color=edge_color)
 
-            # Wrap & measure bullets for vertical centering; left-aligned text
+            # Wrap and measure bullets for vertical centering; left-aligned text
             wrap_width = 42
             line_spacing = 0.085
             gap_between_bullets = 0.09
@@ -473,9 +498,14 @@ class EvaluationVisualizer:
                 if y < 0.12:
                     break
 
-    # ------------------------ FOOTER ------------------------
+    def _add_metrics_bar(self, ax, evaluation_data: Dict[str, Any]) -> None:
+        """
+        Adds a metrics bar at the bottom with evaluation time, question count, and timestamp.
 
-    def _add_metrics_bar(self, ax, evaluation_data: Dict[str, Any]):
+        :param ax: Axes object.
+        :param evaluation_data: Evaluation data dictionary.
+        :return: None.
+        """
         ax.clear()
         ax.set_xlim(0, 1)
         ax.set_ylim(0, 1)
@@ -510,9 +540,13 @@ class EvaluationVisualizer:
 
         ax.text(0.98, 0.50, formatted_time, fontsize=10.2, ha="right", va="center", color="#9E9E9E", style="italic")
 
-    # ------------------------ HELPERS ------------------------
-
     def _get_score_color(self, score: float) -> str:
+        """
+        Gets color based on score thresholds.
+
+        :param score: Score value (0-100).
+        :return: Color hex string.
+        """
         if score >= self.score_thresholds["excellent"]:
             return self.colors["Strong Yes"]
         elif score >= self.score_thresholds["good"]:
@@ -523,6 +557,12 @@ class EvaluationVisualizer:
             return self.colors["Strong No"]
 
     def _get_confidence_color(self, confidence: float) -> str:
+        """
+        Gets color based on confidence thresholds.
+
+        :param confidence: Confidence value (0.0-1.0).
+        :return: Color hex string.
+        """
         if confidence >= 0.85:
             return self.colors["Strong Yes"]
         elif confidence >= 0.70:
@@ -533,6 +573,12 @@ class EvaluationVisualizer:
             return self.colors["Strong No"]
 
     def _get_performance_level(self, score: float) -> str:
+        """
+        Gets performance level text based on score.
+
+        :param score: Score value (0-100).
+        :return: Performance level string.
+        """
         if score >= self.score_thresholds["excellent"]:
             return "Excellent"
         elif score >= self.score_thresholds["good"]:
@@ -547,7 +593,12 @@ def generate_visualizations_from_json(
     json_file: Path, candidate_name: Optional[str] = None, output_dir: Optional[Path] = None
 ) -> Path:
     """
-    Generate a visualization from a JSON evaluation file.
+    Generates a visualization from a JSON evaluation file.
+
+    :param json_file: Path to the JSON file.
+    :param candidate_name: Optional candidate name.
+    :param output_dir: Optional output directory.
+    :return: Path to the saved visualization.
     """
     with open(json_file, "r") as f:
         evaluation_data = json.load(f)
@@ -574,4 +625,4 @@ if __name__ == "__main__":
     output_path = Path(args.output) if args.output else None
 
     viz_path = generate_visualizations_from_json(json_path, candidate_name=args.name, output_dir=output_path)
-    print(f"Visualization saved to: {viz_path}")
+    logger.info(f"Visualization saved to: {viz_path}")

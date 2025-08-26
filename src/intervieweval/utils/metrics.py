@@ -2,7 +2,7 @@
 Prometheus metrics for monitoring the evaluation system.
 """
 
-from prometheus_client import Counter, Histogram, Gauge, Summary
+from prometheus_client import Counter, Gauge, Histogram
 
 # Evaluation metrics
 evaluation_counter = Counter(
@@ -129,12 +129,11 @@ cpu_usage = Gauge(
 )
 
 
-def setup_metrics(port: int = None):
+def setup_metrics(port: int = None) -> None:
     """
-    Setup Prometheus metrics server.
+    Set up the Prometheus metrics server.
 
-    Args:
-        port: Port to expose metrics on (if provided, starts server)
+    :param port: Port to expose metrics on (if provided, starts server)
     """
     import logging
 

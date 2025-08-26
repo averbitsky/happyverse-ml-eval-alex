@@ -1,9 +1,9 @@
 """
-Technical proficiency evaluator
+Technical proficiency evaluator.
 """
 
 import logging
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 from intervieweval.evaluators.base import BaseEvaluator
 from intervieweval.models.evaluation import TechnicalResult
@@ -16,28 +16,40 @@ class TechnicalEvaluator(BaseEvaluator):
     Evaluates technical proficiency and knowledge depth of candidate responses.
     """
 
-    def __init__(self, settings, prompt_manager, cache=None, cache_namespace_suffix=""):
+    def __init__(self, settings, prompt_manager, cache=None, cache_namespace_suffix="") -> None:
+        """
+        Initialize TechnicalEvaluator with settings, prompt manager, and optional cache.
+
+        :param settings: Configuration settings.
+        :param prompt_manager: Prompt template manager.
+        :param cache: Optional persistent cache.
+        :param cache_namespace_suffix: Suffix for cache namespace to prevent cross-contamination.
+        :return: None.
+        """
         super().__init__(
             settings, prompt_manager, cache, chain_name="TECHNICAL", cache_namespace_suffix=cache_namespace_suffix
         )
 
-    def get_prompt_key(self) -> str:
+    @staticmethod
+    def get_prompt_key() -> str:
+        """
+        Get the prompt key for technical evaluation.
+
+        :return: Prompt key string.
+        """
         return "technical"
 
     async def evaluate(
         self, job_description: str, question: str, response: str, technical_context: Optional[str] = None
     ) -> TechnicalResult:
         """
-        Evaluate the technical proficiency of a candidate's response.
+        Evaluates the technical proficiency of a candidate's response.
 
-        Args:
-            job_description: Job requirements
-            question: Interview question
-            response: Candidate's response
-            technical_context: Optional additional technical context
-
-        Returns:
-            TechnicalResult with scores and analysis
+        :param job_description: Job requirements.
+        :param question: Interview question.
+        :param response: Candidate's response.
+        :param technical_context: Optional additional technical context.
+        :return: TechnicalResult with scores and analysis.
         """
         # Prepare inputs
         inputs = {
@@ -55,12 +67,16 @@ class TechnicalEvaluator(BaseEvaluator):
             logger.error(f"Invalid technical evaluation result: {result}")
             raise ValueError("Technical evaluation failed validation")
 
-        # Convert to Pydantic model
+        # Convert to a Pydantic model
         return TechnicalResult(**result)
 
-    def validate_result(self, result: Dict[str, Any]) -> bool:
+    @staticmethod
+    def validate_result(result: Dict[str, Any]) -> bool:
         """
-        Validate technical evaluation result structure.
+        Validates technical evaluation result structure.
+
+        :param result: Evaluation result.
+        :return: True if valid, False otherwise.
         """
         required_fields = [
             "technical_score",

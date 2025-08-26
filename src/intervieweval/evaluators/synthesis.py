@@ -1,13 +1,13 @@
 """
-Synthesis evaluator for final hiring recommendations
+Synthesis evaluator for final hiring recommendations.
 """
 
-import logging
 import json
-from typing import Dict, Any, List
+import logging
+from typing import Any, Dict, List
 
 from intervieweval.evaluators.base import BaseEvaluator
-from intervieweval.models.evaluation import SynthesisResult, QuestionEvaluation
+from intervieweval.models.evaluation import QuestionEvaluation, SynthesisResult
 
 logger = logging.getLogger(__name__)
 
@@ -17,22 +17,33 @@ class SynthesisEvaluator(BaseEvaluator):
     Synthesizes all evaluation results into a final hiring recommendation.
     """
 
-    def __init__(self, settings, prompt_manager, cache=None):
+    def __init__(self, settings, prompt_manager, cache=None) -> None:
+        """
+        Initializes the SynthesisEvaluator with settings, prompt manager, and optional cache.
+
+        :param settings: Configuration settings.
+        :param prompt_manager: Prompt template manager.
+        :param cache: Optional persistent cache.
+        :return: None.
+        """
         super().__init__(settings, prompt_manager, cache, chain_name="SYNTHESIS")
 
-    def get_prompt_key(self) -> str:
+    @staticmethod
+    def get_prompt_key() -> str:
+        """
+        Get the prompt key for synthesis evaluation.
+
+        :return: Prompt key string.
+        """
         return "synthesis"
 
     async def evaluate(self, evaluations: List[QuestionEvaluation], job_description: str) -> SynthesisResult:
         """
         Synthesize all evaluations into a final recommendation.
 
-        Args:
-            evaluations: List of individual question evaluations
-            job_description: Job requirements
-
-        Returns:
-            SynthesisResult with final recommendation
+        :param evaluations: List of individual question evaluations.
+        :param job_description: Job requirements.
+        :return: SynthesisResult with final recommendation.
         """
         # Format evaluations for the prompt
         evaluation_summary = []
@@ -65,12 +76,16 @@ class SynthesisEvaluator(BaseEvaluator):
             logger.error(f"Invalid synthesis result: {result}")
             raise ValueError("Synthesis evaluation failed validation")
 
-        # Convert to Pydantic model
+        # Convert to a Pydantic model
         return SynthesisResult(**result)
 
-    def validate_result(self, result: Dict[str, Any]) -> bool:
+    @staticmethod
+    def validate_result(result: Dict[str, Any]) -> bool:
         """
         Validate synthesis result structure.
+
+        :param result: Result dictionary from the synthesis chain.
+        :return: True if valid, False otherwise.
         """
         required_fields = [
             "recommendation_level",

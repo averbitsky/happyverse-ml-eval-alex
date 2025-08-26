@@ -5,11 +5,11 @@ Web search tool with caching support.
 import logging
 import time
 from typing import Optional
-from ddgs import DDGS
 
+from ddgs import DDGS
 from intervieweval.cache.manager import PersistentCache
 from intervieweval.utils.logging import ColoredLogger
-from intervieweval.utils.metrics import web_searches, web_search_latency, cache_hits, cache_misses
+from intervieweval.utils.metrics import cache_hits, cache_misses, web_search_latency, web_searches
 
 logger = logging.getLogger(__name__)
 
@@ -25,15 +25,15 @@ class WebSearchTool:
         max_results: int = 5,
         cache_ttl: int = 3600,
         cache_namespace_suffix: str = "",
-    ):
+    ) -> None:
         """
-        Initialize web search tool.
+        Initializes the web search tool.
 
-        Args:
-            cache: Optional persistent cache
-            max_results: Maximum number of search results
-            cache_ttl: Cache TTL in seconds
-            cache_namespace_suffix: Suffix for cache namespace to prevent cross-contamination
+        :param cache: Optional persistent cache.
+        :param max_results: Maximum number of search results.
+        :param cache_ttl: Cache TTL in seconds.
+        :param cache_namespace_suffix: Suffix for cache namespace to prevent cross-contamination.
+        :return: None.
         """
         self.cache = cache
         self.max_results = max_results
@@ -52,13 +52,10 @@ class WebSearchTool:
 
     def search(self, query: str) -> str:
         """
-        Perform a web search with caching.
+        Performs a web search with caching.
 
-        Args:
-            query: Search query
-
-        Returns:
-            Search results as formatted string
+        :param query: Search query.
+        :return: Search results as a formatted string.
         """
         # Check cache first
         if self.cache:
@@ -100,7 +97,7 @@ class WebSearchTool:
             logger.error(f"Search failed for query '{query}': {str(e)}")
             result = f"Search failed: {str(e)}"
 
-            # Cache error for shorter time
+            # Cache error
             if self.cache:
                 self.cache.set(namespace=self.namespace, key=query, value=result, ttl=300)  # 5 minutes
 
@@ -115,11 +112,8 @@ class WebSearchTool:
         """
         Async version of search (runs in executor).
 
-        Args:
-            query: Search query
-
-        Returns:
-            Search results as formatted string
+        :param query: Search query.
+        :return: Search results as formatted string
         """
         import asyncio
 
@@ -128,10 +122,9 @@ class WebSearchTool:
 
     def clear_cache(self) -> int:
         """
-        Clear all cached search results.
+        Clears all cached search results.
 
-        Returns:
-            Number of items cleared
+        :return: Number of items cleared
         """
         if not self.cache:
             return 0
@@ -142,10 +135,9 @@ class WebSearchTool:
 
     def get_cache_stats(self) -> dict:
         """
-        Get cache statistics for search namespace.
+        Gets cache statistics for search namespace.
 
-        Returns:
-            Dictionary of cache stats
+        :return: Dictionary of cache stats
         """
         if not self.cache:
             return {"enabled": False}

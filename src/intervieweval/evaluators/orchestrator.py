@@ -50,6 +50,7 @@ class EvaluationOrchestrator:
         :param settings: Configuration settings.
         :param prompt_manager: Prompt template manager.
         :param cache: Optional persistent cache.
+        :return: None.
         """
         self.settings = settings
         self.prompt_manager = prompt_manager
@@ -85,7 +86,8 @@ class EvaluationOrchestrator:
 
         return plausibility_evaluator, technical_evaluator, communication_evaluator, verifier
 
-    def _get_transcript_hash(self, transcript: str) -> str:
+    @staticmethod
+    def _get_transcript_hash(transcript: str) -> str:
         """
         Generates a hash for a transcript for cache namespacing.
 
@@ -267,8 +269,7 @@ class EvaluationOrchestrator:
 
         ColoredLogger.log_info(f"Starting batch evaluation of {len(transcripts)} transcripts")
 
-        # Evaluate transcripts sequentially to avoid state contamination
-        # We could do parallel, but each needs its own evaluator instances
+        # Evaluate transcripts sequentially
         evaluations = []
         for i, transcript in enumerate(transcripts, 1):
             ColoredLogger.log_info(f"Evaluating transcript {i}/{len(transcripts)}")
@@ -287,7 +288,8 @@ class EvaluationOrchestrator:
             },
         )
 
-    def _clean_question(self, question: str) -> str:
+    @staticmethod
+    def _clean_question(question: str) -> str:
         """
         Removes 'Question X:' or 'QX:' prefixes from questions.
 
@@ -297,7 +299,8 @@ class EvaluationOrchestrator:
         cleaned = re.sub(r"^(Question\s+\d+:|Q\d+:)\s*", "", question, flags=re.IGNORECASE)
         return cleaned.strip()
 
-    def _parse_transcript(self, transcript: str, questions: List[str]) -> List[Tuple[str, str]]:
+    @staticmethod
+    def _parse_transcript(transcript: str, questions: List[str]) -> List[Tuple[str, str]]:
         """
         Parses a transcript into question-answer pairs.
 
@@ -331,7 +334,7 @@ class EvaluationOrchestrator:
                     parts = remaining_text.split(question, 1)
                     if len(parts) == 2:
                         answer_text = parts[1]
-                        # Find where next question starts
+                        # Find where the next question starts
                         next_q_start = len(answer_text)
                         for next_q in questions:
                             if next_q in answer_text:
@@ -343,7 +346,8 @@ class EvaluationOrchestrator:
 
         return qa_pairs
 
-    def _calculate_aggregate_scores(self, evaluations: List[QuestionEvaluation]) -> AggregateScores:
+    @staticmethod
+    def _calculate_aggregate_scores(evaluations: List[QuestionEvaluation]) -> AggregateScores:
         """
         Calculates aggregate scores across all evaluations.
 
@@ -364,6 +368,12 @@ class EvaluationOrchestrator:
         communication_scores = [e.communication.communication_score for e in evaluations if e.communication]
 
         def create_aggregate(scores: List[float]) -> AggregateScore:
+            """
+            Creates an AggregateScore from a list of scores.
+
+            :param scores: List of individual scores.
+            :return: AggregateScore object.
+            """
             if not scores:
                 return AggregateScore(mean=0, min=0, max=0, all_scores=[])
             return AggregateScore(mean=sum(scores) / len(scores), min=min(scores), max=max(scores), all_scores=scores)
@@ -374,7 +384,8 @@ class EvaluationOrchestrator:
             communication=create_aggregate(communication_scores),
         )
 
-    def _format_verification_results(self, verification_results: Dict[str, Any]) -> str:
+    @staticmethod
+    def _format_verification_results(verification_results: Dict[str, Any]) -> str:
         """
         Formats verification results for inclusion in prompts.
 

@@ -2,24 +2,21 @@
 Entity verification tools for fact-checking claims in candidate responses.
 """
 
-import logging
-import asyncio
 import json
+import logging
 import re
-from typing import Dict, Any, List, Optional, Set
-from pathlib import Path
-import pandas as pd
+from typing import Any, Dict, List, Optional, Set
 
-from langchain_openai import ChatOpenAI
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 import openai
-
-from intervieweval.config.settings import Settings
+import pandas as pd
 from intervieweval.cache.manager import PersistentCache
-from intervieweval.tools.search import WebSearchTool
+from intervieweval.config.settings import Settings
 from intervieweval.models.evaluation import VerificationEntities
+from intervieweval.tools.search import WebSearchTool
 from intervieweval.utils.logging import ColoredLogger
-from intervieweval.utils.metrics import entities_extracted, verifications_performed, llm_calls, rate_limit_errors
+from intervieweval.utils.metrics import entities_extracted, llm_calls, rate_limit_errors, verifications_performed
+from langchain_openai import ChatOpenAI
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 logger = logging.getLogger(__name__)
 
@@ -108,18 +105,19 @@ COMMON_TECHNOLOGIES = {
 
 class EntityVerifier:
     """
-    Verifies entities mentioned in candidate responses through web search
-    and knowledge base checking.
+    Verifies entities mentioned in candidate responses through web search and knowledge base checking.
     """
 
-    def __init__(self, settings: Settings, cache: Optional[PersistentCache] = None, cache_namespace_suffix: str = ""):
+    def __init__(
+        self, settings: Settings, cache: Optional[PersistentCache] = None, cache_namespace_suffix: str = ""
+    ) -> None:
         """
-        Initialize entity verifier.
+        Initializes an entity verifier.
 
-        Args:
-            settings: Configuration settings
-            cache: Optional persistent cache
-            cache_namespace_suffix: Suffix for cache namespace to prevent cross-contamination
+        :param settings: Configuration settings.
+        :param cache: Optional persistent cache.
+        :param cache_namespace_suffix: Suffix for cache namespace to prevent cross-contamination.
+        :return: None.
         """
         self.settings = settings
         self.cache = cache
@@ -138,14 +136,13 @@ class EntityVerifier:
 
     def _load_known_technologies(self) -> Set[str]:
         """
-        Load known technologies from file and constants.
+        Loads known technologies from a file and constants.
 
-        Returns:
-            Set of known technology names
+        :return: Set of known technology names.
         """
         known_techs = set(COMMON_TECHNOLOGIES)
 
-        # Try to load from Excel file if specified
+        # Try to load from an Excel file if specified
         tech_file_path = self.settings.get_technologies_file_path()
         if tech_file_path and tech_file_path.exists():
             try:
@@ -167,13 +164,10 @@ class EntityVerifier:
     )
     async def extract_entities(self, response: str) -> VerificationEntities:
         """
-        Extract entities from a candidate response for verification.
+        Extracts entities from a candidate response for verification.
 
-        Args:
-            response: Candidate's response text
-
-        Returns:
-            VerificationEntities containing companies, technologies, and claims
+        :param response: Candidate's response text.
+        :return: VerificationEntities containing companies, technologies, and claims.
         """
         ColoredLogger.log_agent_thought("Extracting entities for verification")
 
@@ -226,13 +220,10 @@ Focus on entities that are:
 
     async def verify_entities(self, entities: VerificationEntities) -> Dict[str, Any]:
         """
-        Verify extracted entities through web search and knowledge base.
+        Verifies extracted entities through web search and knowledge base.
 
-        Args:
-            entities: Entities to verify
-
-        Returns:
-            Dictionary of verification results
+        :param entities: Entities to verify.
+        :return: Dictionary of verification results.
         """
         ColoredLogger.log_agent_thought("Starting entity verification")
 
@@ -267,20 +258,17 @@ Focus on entities that are:
 
     async def _verify_company(self, company_name: str) -> str:
         """
-        Verify a company exists and is legitimate.
+        Verifies a company exists and is legitimate.
 
-        Args:
-            company_name: Company name to verify
-
-        Returns:
-            Verification result string
+        :param company_name: Company name to verify.
+        :return: Verification result string.
         """
         ColoredLogger.log_agent_thought(f"Verifying company: {company_name}")
 
         query = f'"{company_name}" company'
         search_result = await self.search_tool.search_async(query)
 
-        # Check if company appears in results
+        # Check if a company appears in results
         if company_name.lower() not in search_result.lower():
             return f"No clear information found about {company_name}. May not exist or be very small/private."
 
@@ -294,13 +282,10 @@ Focus on entities that are:
 
     async def _verify_technology(self, tech_term: str) -> str:
         """
-        Verify a technology exists and is real.
+        Verifies a technology exists and is real.
 
-        Args:
-            tech_term: Technology term to verify
-
-        Returns:
-            Verification result string
+        :param tech_term: Technology term to verify.
+        :return: Verification result string.
         """
         ColoredLogger.log_agent_thought(f"Checking technology: {tech_term}")
 
@@ -331,13 +316,10 @@ Focus on entities that are:
 
     async def _verify_claim(self, claim: str) -> str:
         """
-        Verify a specific technical claim.
+        Verifies a specific technical claim.
 
-        Args:
-            claim: Technical claim to verify
-
-        Returns:
-            Verification result string
+        :param claim: Technical claim to verify.
+        :return: Verification result string.
         """
         ColoredLogger.log_agent_thought(f"Verifying claim: {claim[:100]}...")
 
@@ -361,15 +343,13 @@ Focus on entities that are:
         else:
             return f"Found some supporting information: {search_result[:300]}"
 
-    def _extract_key_terms(self, text: str) -> List[str]:
+    @staticmethod
+    def _extract_key_terms(text: str) -> List[str]:
         """
-        Extract key technical terms from text for verification.
+        Extracts key technical terms from a text for verification.
 
-        Args:
-            text: Text to extract terms from
-
-        Returns:
-            List of key terms
+        :param text: Text from which to extract terms.
+        :return: List of key terms.
         """
         # Extract capitalized words and technical terms
         terms = []

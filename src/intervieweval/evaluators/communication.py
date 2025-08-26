@@ -16,7 +16,7 @@ class CommunicationEvaluator(BaseEvaluator):
     Evaluates communication effectiveness and professionalism of candidate responses.
     """
 
-    def __init__(self, settings, prompt_manager, cache=None, cache_namespace_suffix=""):
+    def __init__(self, settings, prompt_manager, cache=None, cache_namespace_suffix="") -> None:
         """
         Initialize communication evaluator.
 
@@ -30,7 +30,13 @@ class CommunicationEvaluator(BaseEvaluator):
             settings, prompt_manager, cache, chain_name="COMMUNICATION", cache_namespace_suffix=cache_namespace_suffix
         )
 
-    def get_prompt_key(self) -> str:
+    @staticmethod
+    def get_prompt_key() -> str:
+        """
+        Gets the prompt key for communication evaluation.
+
+        :return: Prompt key string.
+        """
         return "communication"
 
     async def evaluate(self, question: str, response: str) -> CommunicationResult:
@@ -55,7 +61,8 @@ class CommunicationEvaluator(BaseEvaluator):
         # Convert to a Pydantic model
         return CommunicationResult(**result)
 
-    def validate_result(self, result: Dict[str, Any]) -> bool:
+    @staticmethod
+    def validate_result(result: Dict[str, Any]) -> bool:
         """
         Validates communication evaluation result structure.
 

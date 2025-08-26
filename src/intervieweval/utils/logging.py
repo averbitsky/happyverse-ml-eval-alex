@@ -3,6 +3,7 @@ Logging utilities with colored output for LLM interactions and system events.
 """
 
 import logging
+
 from colorama import Fore, Style, init
 
 # Initialize colorama
@@ -10,11 +11,18 @@ init(autoreset=True)
 
 
 class ColoredLogger:
-    """Helper class for colored logging of LLM interactions and system events"""
+    """
+    Helper class for colored logging of LLM interactions and system events.
+    """
 
     @staticmethod
     def log_llm_input(prompt_type: str, content: dict):
-        """Log LLM input with color for headers only"""
+        """
+        Log LLM input with color for headers only.
+
+        :param prompt_type: Type of the prompt (e.g., "initial", "follow-up").
+        :param content: Dictionary containing the prompt content.
+        """
         print(f"\n{Fore.CYAN}{'=' * 60}")
         print(f"{Fore.CYAN}LLM INPUT [{prompt_type}]:")
         print(f"{Fore.CYAN}{'=' * 60}{Style.RESET_ALL}")

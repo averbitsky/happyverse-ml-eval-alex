@@ -1,9 +1,9 @@
 """
-Plausibility evaluator for assessing truthfulness and feasibility
+Plausibility evaluator for assessing truthfulness and feasibility.
 """
 
 import logging
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
 from intervieweval.evaluators.base import BaseEvaluator
 from intervieweval.models.evaluation import PlausibilityResult
@@ -17,29 +17,41 @@ class PlausibilityEvaluator(BaseEvaluator):
     Evaluates the plausibility and truthfulness of candidate responses.
     """
 
-    def __init__(self, settings, prompt_manager, cache=None, cache_namespace_suffix=""):
+    def __init__(self, settings, prompt_manager, cache=None, cache_namespace_suffix="") -> None:
+        """
+        Initialize PlausibilityEvaluator.
+
+        :param settings: Configuration settings.
+        :param prompt_manager: Prompt template manager.
+        :param cache: Optional persistent cache.
+        :param cache_namespace_suffix: Suffix for cache namespace to prevent cross-contamination.
+        :return: None.
+        """
         super().__init__(
             settings, prompt_manager, cache, chain_name="PLAUSIBILITY", cache_namespace_suffix=cache_namespace_suffix
         )
-        # Note: verifier is now passed in from orchestrator to ensure fresh instance
+        # Verifier is passed in from the orchestrator to ensure a new instance
 
-    def get_prompt_key(self) -> str:
+    @staticmethod
+    def get_prompt_key() -> str:
+        """
+        Get the prompt key for plausibility evaluation.
+
+        :return: Prompt key string.
+        """
         return "plausibility"
 
     async def evaluate(
         self, job_description: str, question: str, response: str, search_results: Optional[str] = None
     ) -> PlausibilityResult:
         """
-        Evaluate the plausibility of a candidate's response.
+        Evaluates the plausibility of a candidate's response.
 
-        Args:
-            job_description: Job requirements
-            question: Interview question
-            response: Candidate's response
-            search_results: Optional web search results for verification
-
-        Returns:
-            PlausibilityResult with scores and analysis
+        :param job_description: Job requirements.
+        :param question: Interview question.
+        :param response: Candidate's response.
+        :param search_results: Optional web search results for verification.
+        :return: PlausibilityResult with scores and analysis.
         """
         # Prepare inputs
         inputs = {
@@ -57,12 +69,16 @@ class PlausibilityEvaluator(BaseEvaluator):
             logger.error(f"Invalid plausibility evaluation result: {result}")
             raise ValueError("Plausibility evaluation failed validation")
 
-        # Convert to Pydantic model
+        # Convert to a Pydantic model
         return PlausibilityResult(**result)
 
-    def validate_result(self, result: Dict[str, Any]) -> bool:
+    @staticmethod
+    def validate_result(result: Dict[str, Any]) -> bool:
         """
-        Validate plausibility evaluation result structure.
+        Validates plausibility evaluation result structure.
+
+        :param result: Result dictionary from the evaluation chain.
+        :return: True if valid, False otherwise.
         """
         required_fields = [
             "plausibility_score",
@@ -91,10 +107,12 @@ class PlausibilityEvaluator(BaseEvaluator):
         self, job_description: str, question: str, response: str
     ) -> tuple[PlausibilityResult, Dict[str, Any]]:
         """
-        Evaluate plausibility with automatic entity verification.
+        Evaluates plausibility with automatic entity verification.
 
-        Returns:
-            Tuple of (PlausibilityResult, verification_results)
+        :param job_description: Job requirements.
+        :param question: Interview question.
+        :param response: Candidate's response.
+        :return: Tuple of (PlausibilityResult, verification_results).
         """
         # First, extract and verify entities
         entities = await self.verifier.extract_entities(response)
@@ -110,9 +128,13 @@ class PlausibilityEvaluator(BaseEvaluator):
 
         return plausibility_result, verification_results
 
-    def _format_verification_results(self, verification_results: Dict[str, Any]) -> str:
+    @staticmethod
+    def _format_verification_results(verification_results: Dict[str, Any]) -> str:
         """
-        Format verification results for inclusion in the prompt.
+        Formats verification results for inclusion in the prompt.
+
+        :param verification_results: Dictionary of verification results.
+        :return: Formatted string of verification results.
         """
         if not verification_results:
             return "No verification performed"

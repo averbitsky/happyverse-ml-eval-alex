@@ -1,13 +1,18 @@
 """
-Pydantic models for evaluation results
+Pydantic models for evaluation results.
 """
 
-from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, Field
 from enum import Enum
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, Field
 
 
 class RecommendationLevel(Enum):
+    """
+    Enum for recommendation levels.
+    """
+
     STRONG_YES = "Strong Yes"
     WEAK_YES = "Weak Yes"
     WEAK_NO = "Weak No"
@@ -15,13 +20,19 @@ class RecommendationLevel(Enum):
 
 
 class HiringRisk(Enum):
+    """
+    Enum for hiring risk levels.
+    """
+
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
 
 
 class TechnicalFeasibility(BaseModel):
-    """Technical feasibility assessment"""
+    """
+    Technical feasibility assessment.
+    """
 
     assessment: str
     claims_needing_verification: List[str] = Field(default_factory=list)
@@ -30,7 +41,9 @@ class TechnicalFeasibility(BaseModel):
 
 
 class Verifiability(BaseModel):
-    """Verifiability assessment"""
+    """
+    Verifiability assessment.
+    """
 
     verifiable_elements: List[str] = Field(default_factory=list)
     missing_specifics: List[str] = Field(default_factory=list)
@@ -38,14 +51,18 @@ class Verifiability(BaseModel):
 
 
 class AuthenticityIndicators(BaseModel):
-    """Authenticity assessment"""
+    """
+    Authenticity assessment.
+    """
 
     positive_signs: List[str] = Field(default_factory=list)
     negative_signs: List[str] = Field(default_factory=list)
 
 
 class PlausibilityResult(BaseModel):
-    """Plausibility evaluation result"""
+    """
+    Plausibility evaluation result.
+    """
 
     plausibility_score: int = Field(ge=0, le=100)
     technical_feasibility: TechnicalFeasibility
@@ -55,7 +72,9 @@ class PlausibilityResult(BaseModel):
 
 
 class AccuracyAssessment(BaseModel):
-    """Technical accuracy assessment"""
+    """
+    Technical accuracy assessment.
+    """
 
     correct_concepts: List[str] = Field(default_factory=list)
     uncertain_concepts: List[str] = Field(default_factory=list)
@@ -64,7 +83,9 @@ class AccuracyAssessment(BaseModel):
 
 
 class DepthAnalysis(BaseModel):
-    """Depth of knowledge analysis"""
+    """
+    Depth of knowledge analysis.
+    """
 
     level: str = Field(pattern="^(shallow|moderate|deep)$")
     evidence_of_experience: List[str] = Field(default_factory=list)
@@ -73,7 +94,9 @@ class DepthAnalysis(BaseModel):
 
 
 class ProblemSolving(BaseModel):
-    """Problem solving assessment"""
+    """
+    Problem solving assessment.
+    """
 
     approach_quality: str
     best_practices: List[str] = Field(default_factory=list)
@@ -81,7 +104,9 @@ class ProblemSolving(BaseModel):
 
 
 class RoleFit(BaseModel):
-    """Role fit assessment"""
+    """
+    Role fit assessment.
+    """
 
     alignment_score: int = Field(ge=0, le=100)
     strengths_for_role: List[str] = Field(default_factory=list)
@@ -90,7 +115,9 @@ class RoleFit(BaseModel):
 
 
 class TechnicalResult(BaseModel):
-    """Technical proficiency evaluation result"""
+    """
+    Technical proficiency evaluation result.
+    """
 
     technical_score: int = Field(ge=0, le=100)
     accuracy_assessment: AccuracyAssessment
@@ -101,7 +128,9 @@ class TechnicalResult(BaseModel):
 
 
 class ClarityAssessment(BaseModel):
-    """Clarity assessment"""
+    """
+    Clarity assessment.
+    """
 
     score: int = Field(ge=0, le=100)
     organization: str
@@ -110,7 +139,9 @@ class ClarityAssessment(BaseModel):
 
 
 class RelevanceAssessment(BaseModel):
-    """Relevance assessment"""
+    """
+    Relevance assessment.
+    """
 
     answers_question: bool
     directness_score: int = Field(ge=0, le=100)
@@ -119,7 +150,9 @@ class RelevanceAssessment(BaseModel):
 
 
 class PersuasivenessAssessment(BaseModel):
-    """Persuasiveness assessment"""
+    """
+    Persuasiveness assessment.
+    """
 
     score: int = Field(ge=0, le=100)
     compelling_elements: List[str] = Field(default_factory=list)
@@ -128,7 +161,9 @@ class PersuasivenessAssessment(BaseModel):
 
 
 class ProfessionalismAssessment(BaseModel):
-    """Professionalism assessment"""
+    """
+    Professionalism assessment.
+    """
 
     appropriate_tone: bool
     technical_communication: str
@@ -136,7 +171,9 @@ class ProfessionalismAssessment(BaseModel):
 
 
 class CommunicationResult(BaseModel):
-    """Communication evaluation result"""
+    """
+    Communication evaluation result.
+    """
 
     communication_score: int = Field(ge=0, le=100)
     clarity: ClarityAssessment
@@ -147,14 +184,18 @@ class CommunicationResult(BaseModel):
 
 
 class SpecificRecommendations(BaseModel):
-    """Specific hiring recommendations"""
+    """
+    Specific hiring recommendations.
+    """
 
     if_hire: str
     if_reject: str
 
 
 class SynthesisResult(BaseModel):
-    """Final synthesis and recommendation"""
+    """
+    Final synthesis and recommendation.
+    """
 
     recommendation_level: str
     confidence: float = Field(ge=0.0, le=1.0)
@@ -168,7 +209,9 @@ class SynthesisResult(BaseModel):
 
 
 class VerificationEntities(BaseModel):
-    """Entities extracted for verification"""
+    """
+    Entities extracted for verification.
+    """
 
     companies: List[str] = Field(default_factory=list)
     technologies: List[str] = Field(default_factory=list)
@@ -176,7 +219,9 @@ class VerificationEntities(BaseModel):
 
 
 class QuestionEvaluation(BaseModel):
-    """Complete evaluation for a single question"""
+    """
+    Complete evaluation for a single question.
+    """
 
     question: str
     response: str
@@ -187,7 +232,9 @@ class QuestionEvaluation(BaseModel):
 
 
 class AggregateScore(BaseModel):
-    """Aggregate score statistics"""
+    """
+    Aggregate score statistics.
+    """
 
     mean: float
     min: float
@@ -196,7 +243,9 @@ class AggregateScore(BaseModel):
 
 
 class AggregateScores(BaseModel):
-    """All aggregate scores"""
+    """
+    All aggregate scores.
+    """
 
     plausibility: AggregateScore
     technical: AggregateScore
@@ -204,7 +253,9 @@ class AggregateScores(BaseModel):
 
 
 class EvaluationMetadata(BaseModel):
-    """Metadata about the evaluation"""
+    """
+    Metadata about the evaluation.
+    """
 
     timestamp: str
     model_used: str
@@ -215,7 +266,9 @@ class EvaluationMetadata(BaseModel):
 
 
 class FinalEvaluation(BaseModel):
-    """Complete evaluation result"""
+    """
+    Complete evaluation result.
+    """
 
     individual_evaluations: List[QuestionEvaluation]
     aggregate_scores: AggregateScores
@@ -224,7 +277,9 @@ class FinalEvaluation(BaseModel):
 
 
 class BatchEvaluationResult(BaseModel):
-    """Result of batch evaluation"""
+    """
+    Result of batch evaluation.
+    """
 
     evaluations: List[FinalEvaluation]
     batch_metadata: Dict[str, Any]
