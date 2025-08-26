@@ -10,7 +10,9 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    """Application settings with Pydantic validation"""
+    """
+    Application settings with Pydantic validation. Loads from environment variables or .env file.
+    """
 
     # OpenAI Configuration
     openai_api_key: str = Field(..., env="OPENAI_API_KEY")
@@ -49,50 +51,94 @@ class Settings(BaseSettings):
     log_format: str = Field(default="colored", env="LOG_FORMAT")  # "colored" or "json"
 
     class Config:
+        """
+        Pydantic configuration for environment variable loading.
+        """
+
         env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = False
 
     @property
     def project_root(self) -> Path:
-        """Get project root directory (parent of src/)"""
+        """
+        Gets the root directory of the project (parent of src/).
+
+        :return: Path to the project root directory.
+        """
         # Go up from settings.py -> config -> intervieweval -> src -> project_root
         return Path(__file__).parent.parent.parent.parent
 
     def get_cache_dir(self) -> Path:
-        """Get cache directory path"""
+        """
+        Gets the cache directory path.
+
+        :return: Path to the cache directory.
+        """
         return self.project_root / "cache"
 
     def get_cache_path(self) -> Path:
-        """Get full cache database path"""
+        """
+        Gets the full cache database path.
+
+        :return: Path to the cache database file.
+        """
         return self.get_cache_dir() / self.cache_db_name
 
     def get_prompts_path(self) -> Path:
-        """Get prompts file path (in same directory as settings)"""
+        """
+        Gets the path to the prompts.yaml file.
+
+        :return: Path to the prompts.yaml file located alongside settings.py.
+        """
         return Path(__file__).parent / "prompts.yaml"
 
     def get_output_dir(self) -> Path:
-        """Get output directory path"""
+        """
+        Gets the output directory path.
+
+        :return: Path to the output directory.
+        """
         return self.project_root / "output"
 
     def get_data_dir(self) -> Path:
-        """Get data directory path"""
+        """
+        Gets the data directory path.
+
+        :return: Path to the data directory.
+        """
         return self.project_root / "data"
 
     def get_job_description_path(self) -> Path:
-        """Get job description file path"""
+        """
+        Gets the path to the job description file.
+
+        :return: Path to the job_description.txt file.
+        """
         return self.get_data_dir() / "job_description.txt"
 
     def get_questions_path(self) -> Path:
-        """Get questions file path"""
+        """
+        Gets the path to the interview questions file.
+
+        :return: Path to the questions.txt file.
+        """
         return self.get_data_dir() / "questions.txt"
 
     def get_transcripts_dir(self) -> Path:
-        """Get transcripts directory path"""
+        """
+        Gets the transcripts directory path.
+
+        :return: Path to the transcripts directory.
+        """
         return self.get_data_dir() / "transcripts"
 
     def get_technologies_file_path(self) -> Optional[Path]:
-        """Get technologies Excel file path if it exists"""
+        """
+        Gets the path to the technologies Excel file if it exists.
+
+        :return: Path to the technologies Excel file, or None if not set or does not exist.
+        """
         if not self.technologies_filename:
             return None
 

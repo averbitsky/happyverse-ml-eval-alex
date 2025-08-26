@@ -28,7 +28,7 @@ class PersistentCache:
         max_memory_items: int = 1000,
         default_ttl: int = 3600,
         max_db_size_mb: int = 100,
-    ):
+    ) -> None:
         """
         Initializes the persistent cache.
 
@@ -37,6 +37,7 @@ class PersistentCache:
         :param max_memory_items: Maximum items to keep in the memory cache.
         :param default_ttl: Default TTL in seconds.
         :param max_db_size_mb: Maximum database size in MB.
+        :return: None.
         """
         self.cache_dir = Path(cache_dir)
         self.cache_dir.mkdir(exist_ok=True)
@@ -59,9 +60,11 @@ class PersistentCache:
 
         logger.info(f"Initialized persistent cache at {self.db_path}")
 
-    def _init_db(self):
+    def _init_db(self) -> None:
         """
         Initializes an SQLite database with cache tables.
+
+        :return: None.
         """
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
@@ -208,11 +211,11 @@ class PersistentCache:
         """
         Sets a value in the cache.
 
-        :param namespace: Cache namespace
-        :param key: Cache key
-        :param value: Value to cache
-        :param ttl: Time to live in seconds (uses default if None)
-        :return: True if successful
+        :param namespace: Cache namespace.
+        :param key: Cache key.
+        :param value: Value to cache.
+        :param ttl: Time to live in seconds (uses default if None).
+        :return: True if successful.
         """
         with self.lock:
             try:
@@ -252,6 +255,7 @@ class PersistentCache:
     def _add_to_memory_cache(self, key: str, value: Any) -> None:
         """
         Adds an item to the memory cache with LRU eviction.
+
         :param key: Cache key.
         :param value: Value to cache.
         :return: None.
