@@ -81,7 +81,7 @@ class BaseEvaluator(ABC):
             return f"{base_namespace}_{self.cache_namespace_suffix}"
         return base_namespace
 
-    def _create_chain(self) -> Any:
+    def _create_chain(self) -> "MonitoredChain":
         """
         Creates the evaluator's LLM chain with prompt, LLM, and output parser.
 
