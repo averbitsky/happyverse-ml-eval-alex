@@ -12,7 +12,6 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from intervieweval.cache.manager import PersistentCache
 from intervieweval.config.settings import Settings
-from intervieweval.evaluators.base import EvaluatorFactory
 from intervieweval.evaluators.communication import CommunicationEvaluator
 from intervieweval.evaluators.plausibility import PlausibilityEvaluator
 from intervieweval.evaluators.synthesis import SynthesisEvaluator
@@ -28,8 +27,8 @@ from intervieweval.models.evaluation import (
 from intervieweval.prompts.manager import PromptManager
 from intervieweval.tools.verification import EntityVerifier
 from intervieweval.utils.logging import ColoredLogger
+from intervieweval.utils.metrics import batch_size as batch_size_metric
 from intervieweval.utils.metrics import (
-    batch_size as batch_size_metric,
     evaluation_counter,
     evaluation_duration,
     parallel_tasks,
