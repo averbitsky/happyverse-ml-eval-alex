@@ -131,7 +131,7 @@ cpu_usage = Gauge(
 
 def setup_metrics(port: int = None) -> None:
     """
-    Set up the Prometheus metrics server.
+    Sets up the Prometheus metrics server.
 
     :param port: Port to expose metrics on (if provided, starts server)
     """

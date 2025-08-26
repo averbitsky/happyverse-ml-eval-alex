@@ -3,8 +3,6 @@ Test import patterns.
 """
 
 import pytest
-
-# All imports use the package name 'intervieweval'
 from intervieweval import (
     EvaluationOrchestrator,
     FinalEvaluation,
@@ -20,36 +18,61 @@ from intervieweval.utils.logging import ColoredLogger, setup_logging
 
 
 class TestImports:
-    """Test that all imports work correctly"""
+    """
+    Tests to ensure that all key package parts can be imported.
+    """
 
-    def test_version(self):
-        """Test package version is accessible"""
+    def test_version(self) -> None:
+        """
+        Tests that the package version is accessible.
+
+        :return: None.
+        """
         assert __version__ == "0.0.1"
 
-    def test_settings_import(self):
-        """Test Settings can be imported and instantiated"""
+    def test_settings_import(self) -> None:
+        """
+        Tests that Settings can be imported and instantiated.
+
+        :return: None.
+        """
         settings = Settings(openai_api_key="test_key")
         assert settings.openai_api_key == "test_key"
         assert settings.openai_model == "gpt-4"
 
-    def test_prompt_manager_import(self):
-        """Test PromptManager can be imported"""
-        # Would need actual prompts.yaml file to instantiate
+    def test_prompt_manager_import(self) -> None:
+        """
+        Tests that PromptManager can be imported.
+
+        :return: None.
+        """
         assert PromptManager is not None
 
-    def test_model_imports(self):
-        """Test all models can be imported"""
+    def test_model_imports(self) -> None:
+        """
+        Tests that all models can be imported.
+
+        :return: None.
+        """
         assert PlausibilityResult is not None
         assert TechnicalResult is not None
         assert FinalEvaluation is not None
         assert RecommendationLevel.STRONG_YES.value == "Strong Yes"
 
-    def test_evaluator_imports(self):
-        """Test evaluator classes can be imported"""
+    def test_evaluator_imports(self) -> None:
+        """
+        Tests that evaluator classes can be imported.
+
+        :return: None.
+        """
         assert PlausibilityEvaluator is not None
 
-    def test_utils_imports(self):
-        """Test utility functions can be imported"""
+    def test_utils_imports(self) -> None:
+        """
+        Tests that utility functions can be imported.
+
+        :return: None.
+        """
         assert ColoredLogger is not None
         assert setup_logging is not None
 
@@ -60,11 +83,17 @@ class TestImports:
 
 
 class TestEvaluatorIntegration:
-    """Integration tests for the evaluation system"""
+    """
+    Integration tests for the evaluation system.
+    """
 
     @pytest.fixture
-    def settings(self):
-        """Create test settings"""
+    def settings(self) -> Settings:
+        """
+        Creates test settings.
+
+        :return: Settings object with test configuration.
+        """
         return Settings(
             openai_api_key="test_key",
             openai_model="gpt-3.5-turbo",
@@ -74,8 +103,13 @@ class TestEvaluatorIntegration:
         )
 
     @pytest.fixture
-    def prompt_manager(self, tmp_path):
-        """Create test prompt manager with minimal prompts"""
+    def prompt_manager(self, tmp_path) -> PromptManager:
+        """
+        Creates a test prompt manager with minimal prompts.
+
+        :param tmp_path: Temporary path for creating test files.
+        :return: PromptManager object with test prompts.
+        """
         prompts_file = tmp_path / "prompts.yaml"
         prompts_file.write_text(
             """
@@ -96,8 +130,14 @@ prompts:
         )
         return PromptManager(str(prompts_file))
 
-    def test_orchestrator_creation(self, settings, prompt_manager):
-        """Test that orchestrator can be created with proper imports"""
+    def test_orchestrator_creation(self, settings, prompt_manager) -> None:
+        """
+        Tests that orchestrator can be created with proper imports.
+
+        :param settings: Settings fixture.
+        :param prompt_manager: PromptManager fixture.
+        :return: None.
+        """
         # This would normally require mocking the LLM calls
         orchestrator = EvaluationOrchestrator(settings=settings, prompt_manager=prompt_manager, cache=None)
         assert orchestrator is not None

@@ -3,6 +3,7 @@ Logging utilities with colored output for LLM interactions and system events.
 """
 
 import logging
+from typing import Any, Dict
 
 from colorama import Fore, Style, init
 
@@ -16,9 +17,9 @@ class ColoredLogger:
     """
 
     @staticmethod
-    def log_llm_input(prompt_type: str, content: dict):
+    def log_llm_input(prompt_type: str, content: Dict[str, Any]) -> None:
         """
-        Log LLM input with color for headers only.
+        Logs LLM input with color for headers only.
 
         :param prompt_type: Type of the prompt (e.g., "initial", "follow-up").
         :param content: Dictionary containing the prompt content.
@@ -34,11 +35,17 @@ class ColoredLogger:
                 print(f"{key}: {value[:1000]}...")
             else:
                 print(f"{key}: {value}")
-        print(f"{Fore.CYAN}{'=' * 60}{Style.RESET_ALL}\n")
+        print(f"{Fore.CYAN}{'=' * 60}{Style.RESET_ALL}`\n")
 
     @staticmethod
-    def log_llm_output(prompt_type: str, result: dict):
-        """Log LLM output with selective coloring"""
+    def log_llm_output(prompt_type: str, result: Dict[str, Any]) -> None:
+        """
+        Logs LLM output with selective coloring.
+
+        :param prompt_type: Type of the prompt (e.g., "initial", "follow-up").
+        :param result: The output result from the LLM, typically a dictionary.
+        :return: None.
+        """
         print(f"\n{Fore.GREEN}{'=' * 60}")
         print(f"{Fore.GREEN}LLM OUTPUT [{prompt_type}]:")
         print(f"{Fore.GREEN}{'=' * 60}{Style.RESET_ALL}")
@@ -60,53 +67,90 @@ class ColoredLogger:
         print(f"{Fore.GREEN}{'=' * 60}{Style.RESET_ALL}\n")
 
     @staticmethod
-    def log_agent_thought(thought: str):
-        """Log agent reasoning steps in yellow"""
+    def log_agent_thought(thought: str) -> None:
+        """
+        Logs agent reasoning steps in yellow.
+
+        :param thought: The agent's thought process to log.
+        :return: None.
+        """
         print(f"{Fore.YELLOW}[AGENT THOUGHT]: {thought}{Style.RESET_ALL}")
 
     @staticmethod
-    def log_agent_action(action: str, input_str: str = None):
-        """Log agent actions in cyan"""
+    def log_agent_action(action: str, input_str: str = None) -> None:
+        """
+        Logs agent actions in cyan.
+
+        :param action: The action taken by the agent.
+        :param input_str: Optional input associated with the action.
+        :return: None.
+        """
         print(f"{Fore.CYAN}[AGENT ACTION]: {action}{Style.RESET_ALL}")
         if input_str:
             print(f"   Input: {input_str}")
 
     @staticmethod
-    def log_agent_observation(observation: str):
-        """Log agent observations in magenta"""
+    def log_agent_observation(observation: str) -> None:
+        """
+        Logs agent observations in magenta.
+
+        :param observation: The observation made by the agent.
+        :return: None.
+        """
         # Truncate very long observations
         if len(observation) > 200:
             observation = observation[:200] + "..."
         print(f"{Fore.MAGENTA}[OBSERVATION]: {observation}{Style.RESET_ALL}")
 
     @staticmethod
-    def log_cache_hit(cache_type: str, key: str):
-        """Log cache hits"""
+    def log_cache_hit(cache_type: str, key: str) -> None:
+        """
+        Logs cache hits.
+
+        :param cache_type: Type of cache (e.g., "prompt", "search").
+        :param key: The cache key that was hit.
+        :return: None.
+        """
         print(f"{Fore.YELLOW}[CACHE HIT]: Found cached {cache_type} for key: {key[:50]}...{Style.RESET_ALL}")
 
     @staticmethod
-    def log_error(message: str):
-        """Log errors in red"""
+    def log_error(message: str) -> None:
+        """
+        Logs errors in red.
+
+        :param message: The error message to log.
+        :return: None.
+        """
         print(f"{Fore.RED}[ERROR]: {message}{Style.RESET_ALL}")
 
     @staticmethod
-    def log_success(message: str):
-        """Log success messages in green"""
+    def log_success(message: str) -> None:
+        """
+        Logs success messages in green.
+
+        :param message: The success message to log.
+        :return: None.
+        """
         print(f"{Fore.GREEN}[SUCCESS]: {message}{Style.RESET_ALL}")
 
     @staticmethod
-    def log_info(message: str):
-        """Log info messages in blue"""
+    def log_info(message: str) -> None:
+        """
+        Logs info messages in blue.
+
+        :param message: The info message to log.
+        :return: None.
+        """
         print(f"{Fore.BLUE}[INFO]: {message}{Style.RESET_ALL}")
 
 
-def setup_logging(log_level: str = "INFO", log_format: str = "colored"):
+def setup_logging(log_level: str = "INFO", log_format: str = "colored") -> None:
     """
-    Setup logging configuration
+    Sets up the logging configuration.
 
-    Args:
-        log_level: Logging level (DEBUG, INFO, WARNING, ERROR)
-        log_format: Format type ("colored" or "json")
+    :param log_level: Logging level (DEBUG, INFO, WARNING, ERROR).
+    :param log_format: Format type ("colored" or "json").
+    :return: None.
     """
     level = getattr(logging, log_level.upper(), logging.INFO)
 
