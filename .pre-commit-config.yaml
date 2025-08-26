@@ -1,0 +1,82 @@
+repos:
+  - repo: https://github.com/psf/black
+    # Black version
+    rev: 25.1.0
+    hooks:
+      # Run the Black formatter
+      - id: black
+        exclude: ^scripts/examples/(train_llm|harmonize_with_confidence)\.py$  # Exclude specific files
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version
+    rev: v0.9.6
+    hooks:
+      # Run the linter
+      - id: ruff
+        args: [ --fix ]
+
+  - repo: https://github.com/PyCQA/isort
+    # isort version
+    rev: 6.0.0
+    hooks:
+      # Sort imports with isort
+      - id: isort
+        args: [ --profile=black, --overwrite-in-place ]
+
+  - repo: https://github.com/kynan/nbstripout
+    # nbstripout version
+    rev: 0.8.1
+    hooks:
+      # Strip output cells from Jupyter notebooks before committing to keep notebooks clean and reduce merge conflicts
+      - id: nbstripout
+        stages: [ pre-commit ]
+
+  # Local repo for custom hooks
+  - repo: local
+    hooks:
+      - id: auto-stage-fixed
+        name: Auto‑stage files modified by hooks
+        entry: |
+          bash -c '
+          # Wait for index lock to clear
+          max_attempts=100
+          attempt=0
+          while [ -f ".git/index.lock" ] && [ $attempt -lt $max_attempts ]; do
+            sleep 0.2
+            attempt=$((attempt + 1))
+          done
+          
+          # If lock still exists after waiting, remove it if it is stale
+          if [ -f ".git/index.lock" ]; then
+            lock_file=".git/index.lock"
+            lock_age=$(( $(date +%s) - $(stat -f %m "$lock_file") ))
+            # If lock is older than 60 seconds, it might be stale
+            if [ $lock_age -gt 60 ]; then
+              echo "Removing stale lock file that is $lock_age seconds old"
+              rm -f "$lock_file"
+            else
+              echo "Lock file exists and is not stale. Exiting."
+              exit 0  # Exit successfully to not block the commit
+            fi
+          fi
+          
+          # Stage files one at a time with retries
+          staged=$(git diff --cached --name-only)
+          for f in $staged; do
+            if [ -e "$f" ] && [ -n "$(git diff -- "$f")" ]; then
+              attempts=0
+              max_attempts=20
+              while [ $attempts -lt $max_attempts ]; do
+                if git add -- "$f" 2>/dev/null; then
+                  break
+                fi
+                attempts=$((attempts + 1))
+                sleep 0.5
+              done
+            fi
+          done
+          exit 0  # Always exit successfully
+          '
+        language: system
+        stages: [ pre-commit ]
+        verbose: true
